@@ -21,7 +21,6 @@ Pour développer, `pnpm dev` lance Postgres, l'API en watch (:3000), le front Vi
 |---|---|
 | http://localhost:3000/docs | Swagger |
 | http://localhost:3000/health | Sonde de santé (vérifie la base, hors contrat) |
-| `pnpm --filter @concordance/web dev:mocks` | Front seul sur le faux back MSW, sans API ni base |
 
 Au démarrage, l'API joue les migrations et le seed (idempotents) : les 6 zones de la carte et 14 managers en shift, comme dans la maquette (La Défense est pleine, Orly vide). Pour revenir à cet état : `pnpm db:down && docker volume rm concordance-demo_db-data`.
 
@@ -44,7 +43,7 @@ Au démarrage, l'API joue les migrations et le seed (idempotents) : les 6 zones 
                      PostgreSQL 17 (Docker)
 
 packages/contracts   les 6 zones et l'événement WS en Zod, importés par l'API et le front
-packages/api-client  généré par Orval depuis openapi.json : hooks, types, schémas Zod, mocks MSW
+packages/api-client  généré par Orval depuis openapi.json : hooks, types, schémas Zod
 packages/tsconfig    configurations TypeScript strictes partagées
 ```
 
@@ -71,10 +70,10 @@ schéma Zod de l'événement WS (packages/contracts) → gateway Nest et hook du
 
 1. Les DTO sont des schémas Zod (`createZodDto`). Les services renvoient des lignes Drizzle, les contrôleurs des DTO : les champs internes du manager (email, matricule, téléphone) ne sortent jamais.
 2. `pnpm generate` écrit `apps/api/openapi.json` sans démarrer de serveur ni de base.
-3. Orval produit dans `packages/api-client/src/generated/` les hooks (`useListZones`, `useCreatePresence`…), les types (`ZoneOccupancy`, `Presence`…), des schémas Zod et des handlers MSW.
+3. Orval produit dans `packages/api-client/src/generated/` les hooks (`useListZones`, `useCreatePresence`…), les types (`ZoneOccupancy`, `Presence`…), et des schémas Zod.
 4. OpenAPI ne décrit pas le WebSocket : l'événement `zone.occupancy.updated` est un schéma Zod de `packages/contracts`, qui type socket.io côté serveur et côté client. Le front le valide avant de toucher au cache.
 
-Renommer `startedAt` en `startTime` dans `apps/api/src/presences/presences.dto.ts` (et son mapping dans `presences.service.ts`) fait échouer `pnpm typecheck` sur deux fichiers du front et sur les mocks.
+Renommer `startedAt` en `startTime` dans `apps/api/src/presences/presences.dto.ts` (et son mapping dans `presences.service.ts`) fait échouer `pnpm typecheck` sur deux fichiers du front.
 
 ## Règles métier garanties en base
 
@@ -116,7 +115,7 @@ Trois scripts Playwright rejouent les parcours et prennent des captures (Chromiu
 
 | Commande (`pnpm --filter @concordance/web …`) | Ce qu'elle prouve |
 |---|---|
-| `proof:front` | Parcours complet sur les mocks, téléphone et tablette, dont le 409 et son rollback |
+| `proof:front` | Parcours complet sur la vraie API, téléphone et tablette, dont le 409 et son rollback (après `pnpm db:up && pnpm build`) |
 | `proof:live` | Deux navigateurs sur la vraie API se mettent à jour sans recharger (après `pnpm db:up && pnpm build`) |
 | `proof:pwa` | L'app rouvre hors ligne avec la dernière occupation (après `pnpm --filter @concordance/web build`) |
 

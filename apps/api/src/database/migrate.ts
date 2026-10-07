@@ -12,7 +12,7 @@ export async function migrateDatabase(db: Database): Promise<void> {
   await migrate(db, { migrationsFolder: MIGRATIONS_FOLDER });
 }
 
-/** Occupation de départ, reprise de la maquette (et des mocks du front). */
+/** Occupation de départ, reprise de la maquette. */
 const DEMO_PRESENCES: Record<string, string[]> = {
   'paris-rive-droite': ['Karim B.', 'Sophie T.', 'Julien R.'],
   'paris-rive-gauche': ['Nadia K.', 'Thomas G.', 'Léa M.', 'Hugo P.', 'Inès D.'],

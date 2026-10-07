@@ -14,8 +14,6 @@ export default defineConfig({
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
     react(),
     VitePWA({
-      // En mode mocks, MSW occupe déjà la portée « / » avec son propre service worker.
-      disable: process.env.VITE_API_MOCKS === 'true',
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon-180x180.png'],
@@ -45,7 +43,6 @@ export default defineConfig({
       workbox: {
         // Shell en cache : JS, CSS, HTML et icônes précachés, toute navigation retombe sur index.html.
         globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
-        globIgnores: ['mockServiceWorker.js'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//],
         runtimeCaching: [

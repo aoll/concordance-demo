@@ -19,10 +19,10 @@
 | 2:15 | Dans le terminal : `pnpm --filter @concordance/api exec vitest run presences.concurrency`. | La capacité est garantie par Postgres, pas par le front : 30 inscriptions simultanées sur une zone de 3, il en passe exactement 3 (`SELECT … FOR UPDATE` sur la zone). Si une inscription perd la course, l'API répond 409 `ZONE_FULL` et le front annule sa mise à jour optimiste avec un message. |
 | 3:00 | Sur le téléphone, « Terminer mon shift ». | Orly redescend à 1/3 sur les deux écrans. La fin de shift est un `PATCH` avec `status: "ENDED"`, pas un `DELETE` : on garde l'historique. |
 | 3:30 | Sur le téléphone : DevTools, onglet Network, « Offline », puis recharger. | Bandeau « Hors ligne » et dernière occupation connue : shell en cache par le service worker, cache TanStack Query persisté dans IndexedDB. Repasser en ligne : la carte se resynchronise. |
-| 4:15 | Dans l'éditeur, renommer `startedAt` en `startTime` dans `presences.dto.ts` et à la ligne du mapping dans `presences.service.ts`, puis `pnpm typecheck`. | Le front ne compile plus (`ShiftBanner.tsx`, `shift/cache.ts`, les mocks) : un seul contrat, du DTO Zod au hook généré par Orval. Annuler avec `git checkout apps/api`. |
+| 4:15 | Dans l'éditeur, renommer `startedAt` en `startTime` dans `presences.dto.ts` et à la ligne du mapping dans `presences.service.ts`, puis `pnpm typecheck`. | Le front ne compile plus (`ShiftBanner.tsx`, `shift/cache.ts`) : un seul contrat, du DTO Zod au hook généré par Orval. Annuler avec `git checkout apps/api`. |
 | 4:45 | Conclure sur le README, section « Ce qu'on ferait en production ». | SSO OIDC, adapter Redis pour plusieurs instances, observabilité, vraie carte MapLibre sur les données IDFM. |
 
 ## Si quelque chose casse
 
 - Port 3000, 4173 ou 5432 déjà pris : arrêter l'autre processus, ou `pnpm db:down` puis relancer.
-- Pas de réseau ni de Docker : `pnpm --filter @concordance/web dev:mocks` sert le même front sur un faux back MSW (http://localhost:5173). Dans la console, `window.concordanceMocks.occupy('orly', 'Kenza A.')` joue l'autre manager en direct.
+- Pas de Docker sur la machine : montrer la version déployée sur Railway (même image, voir le README).

@@ -1,6 +1,6 @@
 import { defineConfig } from 'orval';
 
-// Contrat écrit par l'API (apps/api/openapi.json) → hooks TanStack Query, mocks MSW, schémas Zod.
+// Contrat écrit par l'API (apps/api/openapi.json) → hooks TanStack Query, schémas Zod.
 const input = '../../apps/api/openapi.json';
 
 export default defineConfig({
@@ -12,7 +12,6 @@ export default defineConfig({
       mode: 'tags-split',
       client: 'react-query',
       httpClient: 'fetch',
-      mock: { generators: [{ type: 'msw' }] },
       clean: true,
       override: {
         mutator: { path: 'src/fetcher.ts', name: 'customFetch' },
