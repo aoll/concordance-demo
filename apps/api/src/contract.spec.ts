@@ -65,18 +65,11 @@ describe('contrat API', () => {
     expect(Object.keys(manager.properties).sort()).toEqual(['displayName', 'id']);
   });
 
-  it('valide les entrées avant le contrôleur (400)', async () => {
+  it('valide les entrées avant le contrôleur (400), sans toucher à la base', async () => {
+    // Les routes de présence sont derrière le guard : leur 400 est testé dans presences.spec.ts.
     await request(app.getHttpServer())
-      .post('/api/presences')
-      .send({ zoneId: 'pas-un-uuid' })
+      .post('/api/auth/login')
+      .send({ displayName: 'x' })
       .expect(400);
-    await request(app.getHttpServer())
-      .patch('/api/presences/3f1c1f3e-8a51-4c7b-9a43-0d6c1d1e2f10')
-      .send({ status: 'ACTIVE' })
-      .expect(400);
-  });
-
-  it('répond 501 tant que les stubs ne sont pas implémentés', async () => {
-    await request(app.getHttpServer()).get('/api/zones').expect(501);
   });
 });

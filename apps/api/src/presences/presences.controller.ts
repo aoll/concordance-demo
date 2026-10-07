@@ -2,12 +2,12 @@ import {
   Body,
   Controller,
   Get,
-  NotImplementedException,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiConflictResponse,
@@ -18,18 +18,24 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
+import { AuthGuard, CurrentManager } from '../auth/auth.guard';
 import { ErrorResponseDto } from '../common/error.dto';
+import type { ManagerRow } from '../database/schema';
 import {
   CreatePresenceDto,
   ListPresencesQueryDto,
   PresenceDto,
   UpdatePresenceDto,
 } from './presences.dto';
+import { PresencesService } from './presences.service';
 
 @ApiTags('presences')
 @ApiUnauthorizedResponse({ type: ErrorResponseDto })
+@UseGuards(AuthGuard)
 @Controller('presences')
 export class PresencesController {
+  constructor(private readonly presences: PresencesService) {}
+
   @Get()
   @ApiOperation({
     summary: 'Recherche de présences',
@@ -37,9 +43,8 @@ export class PresencesController {
       "managerId + active=true : le shift en cours d'un manager. zoneId + active=true : qui est sur une zone.",
   })
   @ZodResponse({ status: 200, type: [PresenceDto] })
-  listPresences(@Query() _query: ListPresencesQueryDto): PresenceDto[] {
-    // Lot 3b.
-    throw new NotImplementedException();
+  listPresences(@Query() query: ListPresencesQueryDto): Promise<PresenceDto[]> {
+    return this.presences.list(query);
   }
 
   @Post()
@@ -51,9 +56,11 @@ export class PresencesController {
     description:
       'ZONE_FULL : zone complète. ALREADY_PRESENT : le manager a déjà un shift en cours.',
   })
-  createPresence(@Body() _body: CreatePresenceDto): PresenceDto {
-    // Lot 3b : transaction avec SELECT … FOR UPDATE sur la zone.
-    throw new NotImplementedException();
+  createPresence(
+    @CurrentManager() manager: ManagerRow,
+    @Body() body: CreatePresenceDto,
+  ): Promise<PresenceDto> {
+    return this.presences.create(manager, body.zoneId);
   }
 
   @Patch(':id')
@@ -66,9 +73,11 @@ export class PresencesController {
   @ApiNotFoundResponse({ type: ErrorResponseDto })
   @ApiConflictResponse({ type: ErrorResponseDto, description: 'PRESENCE_ALREADY_ENDED' })
   updatePresence(
-    @Param('id', ParseUUIDPipe) _id: string,
+    @CurrentManager() manager: ManagerRow,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() _body: UpdatePresenceDto,
-  ): PresenceDto {
-    throw new NotImplementedException();
+  ): Promise<PresenceDto> {
+    // Seul statut accepté par le contrat : ENDED.
+    return this.presences.end(manager, id);
   }
 }
