@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "docker compose up -d --wait db && turbo run dev",
+    "demo": "docker compose up -d --wait db && turbo run start",
     "db:up": "docker compose up -d --wait db",
     "db:down": "docker compose down",
     "generate": "turbo run generate",

@@ -1,6 +1,8 @@
 # concordance-demo
 
-Démo pour l'entretien Tech Lead Concordance : une API NestJS modulaire, un typage de bout en bout jusqu'au front, une PWA responsive et de la présence en temps réel.
+Démo pour l'entretien Tech Lead Concordance : des managers RATP s'inscrivent sur une zone du réseau le temps de leur shift. Elle montre une API NestJS modulaire, un typage de bout en bout jusqu'au front, une capacité garantie par Postgres, la présence en temps réel et une PWA qui s'ouvre hors ligne.
+
+Le déroulé de la démo en 5 minutes est dans [docs/demo.md](docs/demo.md).
 
 ## Lancer
 
@@ -8,72 +10,115 @@ Prérequis : Node 22, pnpm 10 (`corepack enable`), Docker.
 
 ```bash
 pnpm install
-pnpm dev          # Postgres (Docker) + API (:3000) + front (:5173) + régénération du client
+pnpm demo         # Postgres (Docker), build de prod, API (:3000) et front (:4173)
 ```
 
-- Front : http://localhost:5173 (le proxy Vite envoie `/api` vers l'API)
-- API : http://localhost:3000/api, Swagger : http://localhost:3000/docs
-- Santé : http://localhost:3000/health (vérifie la base ; hors contrat)
-- Front sur le faux back MSW, sans API : `pnpm --filter @concordance/web dev:mocks`
-  (écritures ralenties de 600 ms pour voir l'optimisme ; `window.concordanceMocks.occupy('orly', 'Léa')` et `.release('orly', 'Léa')` simulent un autre manager, en direct sur la carte)
-- Preuve du parcours front (téléphone et tablette, captures dans `apps/web/front-proof`) : `pnpm --filter @concordance/web proof:front`
-- Preuve du temps réel, deux navigateurs sur la vraie API (après `pnpm db:up && pnpm build`, captures dans `apps/web/live-proof`) : `pnpm --filter @concordance/web proof:live`
-- Temps réel : la gateway socket.io de l'API (même port, `/socket.io`) diffuse `zone.occupancy.updated` après chaque inscription ou fin de shift ; le contrat de l'événement est un schéma Zod de `packages/contracts`, partagé par l'API et le front
+Ouvrir http://localhost:4173. C'est la version à montrer : le service worker de la PWA n'est actif que sur le build.
 
-Au démarrage, l'API joue les migrations et le seed (idempotents) : les 6 zones de la carte et une quinzaine de managers en shift, comme dans la maquette (La Défense est pleine, Orly vide). Pour repartir d'une base vide : `pnpm db:down && docker volume rm concordance-demo_db-data`.
+Pour développer, `pnpm dev` lance Postgres, l'API en watch (:3000), le front Vite (:5173) et la régénération du client à chaque changement de DTO.
 
-## Vérifier (la « CI » est locale)
+| Adresse | Contenu |
+|---|---|
+| http://localhost:3000/docs | Swagger |
+| http://localhost:3000/health | Sonde de santé (vérifie la base, hors contrat) |
+| `pnpm --filter @concordance/web dev:mocks` | Front seul sur le faux back MSW, sans API ni base |
+
+Au démarrage, l'API joue les migrations et le seed (idempotents) : les 6 zones de la carte et 14 managers en shift, comme dans la maquette (La Défense est pleine, Orly vide). Pour revenir à cet état : `pnpm db:down && docker volume rm concordance-demo_db-data`.
+
+## Architecture
+
+```
+            navigateur (PWA, téléphone ou tablette)
+  ┌─────────────────────────────────────────────────────────┐
+  │ apps/web  Vite + React + TanStack Router / Query        │
+  │   hooks générés (packages/api-client)   socket.io-client│
+  │   cache persisté dans IndexedDB, service worker Workbox │
+  └──────────────┬──────────────────────────────┬───────────┘
+          REST /api (cookie)          WebSocket /socket.io
+  ┌──────────────┴──────────────────────────────┴───────────┐
+  │ apps/api  NestJS                                        │
+  │   AuthModule   ZonesModule   PresencesModule + Gateway  │
+  │   DTO Zod (nestjs-zod)  →  openapi.json                 │
+  └──────────────────────────┬──────────────────────────────┘
+                             │ Drizzle
+                     PostgreSQL 17 (Docker)
+
+packages/contracts   les 6 zones et l'événement WS en Zod, importés par l'API et le front
+packages/api-client  généré par Orval depuis openapi.json : hooks, types, schémas Zod, mocks MSW
+packages/tsconfig    configurations TypeScript strictes partagées
+```
+
+Monorepo pnpm + Turborepo. Turbo régénère `openapi.json` et le client avant chaque `typecheck`, `test`, `build` et `dev` ; ces fichiers ne sont pas versionnés.
+
+## Choix techniques
+
+| Sujet | Choix | Pourquoi, et l'alternative assumée |
+|---|---|---|
+| Back | NestJS | Modules, injection, guards, pipes, filtres d'exception, gateway WebSocket et Swagger intégrés : c'est la structure qu'une squad de plusieurs développeurs partage. Hono est plus léger, mais il faudrait réinventer cette structure. |
+| Validation | Zod via `nestjs-zod` | Un seul schéma valide l'entrée (`ZodValidationPipe`), filtre la sortie (`@ZodResponse` retire les champs non déclarés) et alimente le Swagger. |
+| Contrat | OpenAPI → Orval | Le front ne déclare aucun type d'API à la main : un champ renommé dans un DTO casse sa compilation. |
+| ORM | Drizzle | SQL explicite, utile pour la règle de capacité (verrou `FOR UPDATE`, index partiel). Prisma, plus répandu en ESN, se défend aussi. |
+| Front | SPA Vite + TanStack | App interne authentifiée : pas de SSR ni de SEO. Le PWA de Next.js passe par Serwist, et les Server Components brouilleraient la démo du cache TanStack Query. |
+| Temps réel | Gateway socket.io de Nest | Reconnexion et fallback fournis, même port que l'API. |
+| Outillage | TypeScript strict, Biome, Vitest, Docker Compose | Biome remplace ESLint et Prettier en un outil. |
+
+## Typage de bout en bout
+
+```
+DTO Zod (apps/api) → openapi.json → Orval → packages/api-client → apps/web
+schéma Zod de l'événement WS (packages/contracts) → gateway Nest et hook du front
+```
+
+1. Les DTO sont des schémas Zod (`createZodDto`). Les services renvoient des lignes Drizzle, les contrôleurs des DTO : les champs internes du manager (email, matricule, téléphone) ne sortent jamais.
+2. `pnpm generate` écrit `apps/api/openapi.json` sans démarrer de serveur ni de base.
+3. Orval produit dans `packages/api-client/src/generated/` les hooks (`useListZones`, `useCreatePresence`…), les types (`ZoneOccupancy`, `Presence`…), des schémas Zod et des handlers MSW.
+4. OpenAPI ne décrit pas le WebSocket : l'événement `zone.occupancy.updated` est un schéma Zod de `packages/contracts`, qui type socket.io côté serveur et côté client. Le front le valide avant de toucher au cache.
+
+Renommer `startedAt` en `startTime` dans `apps/api/src/presences/presences.dto.ts` (et son mapping dans `presences.service.ts`) fait échouer `pnpm typecheck` sur deux fichiers du front et sur les mocks.
+
+## Règles métier garanties en base
+
+Schéma dans `apps/api/src/database/schema.ts`, migrations versionnées dans `apps/api/drizzle/`.
+
+1. **Un manager dans au plus une zone** : index unique partiel `presences(manager_id) WHERE ended_at IS NULL`.
+2. **Une zone ne dépasse jamais sa capacité** : l'inscription est une transaction qui verrouille la ligne de la zone (`SELECT … FOR UPDATE`), compte les présences actives, puis insère. Deux inscriptions sur la même zone passent l'une après l'autre. Le test `presences.concurrency.spec.ts` lance 30 inscriptions simultanées sur une zone de capacité 3 et vérifie qu'il en passe exactement 3 ; sans le verrou, il en passe 4 à 6.
+
+Les services lèvent des erreurs métier (`ZoneFullError`…) sans connaître HTTP ; un filtre d'exception les traduit en `ErrorResponse { statusCode, code, message }` (409 `ZONE_FULL` ou `ALREADY_PRESENT`, 403, 404). Le front lit `code` pour afficher son message.
+
+La fin de shift est un `PATCH /presences/:id { status: "ENDED" }` et non un `DELETE` : on garde l'historique.
+
+## Temps réel
+
+Après le commit d'une inscription ou d'une fin de shift, `PresenceGateway` diffuse `zone.occupancy.updated` avec l'occupation complète de la zone. Le front (`apps/web/src/live/`) l'écrit dans le cache TanStack Query par `setQueryData`, sans refetch : la carte, le panneau et le fil « Activité en direct » suivent, et la zone clignote. L'événement porte l'état complet, donc l'appliquer deux fois ne change rien ; après une coupure, le front refetch une fois pour rattraper ce qu'il a manqué.
+
+L'inscription elle-même est optimiste : la carte bouge avant la réponse, et un 409 annule la mise à jour avec un message clair.
+
+## PWA et hors ligne
+
+- `vite-plugin-pwa` (Workbox) : manifest, icônes, shell précaché, `/api` en network-first (la dernière réponse connue sert si le réseau ne répond pas en 3 s).
+- Le cache TanStack Query est persisté dans IndexedDB : l'app rouvre en mode avion avec la dernière occupation connue et un bandeau « Hors ligne ». La déconnexion purge ce cache.
+
+## Identité
+
+Pas de vraie authentification : `POST /api/auth/login { displayName }` crée le manager au premier passage et pose un cookie httpOnly `concordance_session` (JWT signé, 12 h). `AuthGuard` le lit et `@CurrentManager()` injecte le manager.
+
+## Vérifier
+
+La « CI » est locale :
 
 ```bash
 pnpm check        # Biome, Postgres (Docker), puis typecheck, tests et build de tous les paquets
 ```
 
-Les tests de l'API tournent sur une vraie base Postgres (`concordance_test`, recréée à chaque run sur le conteneur du docker compose), parce que les règles métier vivent en base : le verrou de capacité et l'index unique partiel ne se testent pas avec un mock.
+Les tests de l'API tournent sur une vraie base (`concordance_test`, recréée à chaque run), parce que le verrou de capacité et l'index partiel ne se testent pas avec un mock.
 
-## Base de données
+Trois scripts Playwright rejouent les parcours et prennent des captures (Chromium requis) :
 
-Drizzle + PostgreSQL. Schéma dans `apps/api/src/database/schema.ts`, migrations SQL versionnées dans `apps/api/drizzle/` (`pnpm --filter @concordance/api db:generate` après un changement de schéma).
-
-- `managers` : `display_name` unique, et des champs internes (email, matricule, téléphone) qui ne sortent jamais de l'API.
-- `zones` : `slug` = id du `<path>` de la carte, `capacity > 0`.
-- `presences` : `ended_at` null tant que le shift est en cours.
-
-Les deux règles de la proposition sont garanties par Postgres :
-
-1. **Un manager dans au plus une zone** : index unique partiel `presences(manager_id) WHERE ended_at IS NULL`.
-2. **Une zone ne dépasse jamais sa capacité** : l'inscription est une transaction qui verrouille la ligne de la zone (`SELECT … FOR UPDATE`), compte les présences actives, puis insère. Deux inscriptions sur la même zone passent donc l'une après l'autre. Le test `presences.concurrency.spec.ts` lance 30 inscriptions simultanées sur une zone de capacité 3 et vérifie qu'il y en a exactement 3 ; sans le verrou, il en passe 4 à 6.
-
-La connexion est paresseuse (le pool `pg` ne se connecte qu'à la première requête) : `pnpm generate` exporte le contrat sans base.
-
-## Identité
-
-Pas de vraie auth : `POST /api/auth/login { displayName }` crée le manager au premier passage et pose un cookie httpOnly `concordance_session` (JWT signé, 12 h). `AuthGuard` le lit et `@CurrentManager()` injecte le manager. La cible serait le SSO RATP (OIDC).
-
-## Structure
-
-```
-apps/
-  api/            NestJS : modules auth, zones, presences ; DTO en Zod (nestjs-zod)
-  web/            Vite + React + TanStack Router (fichiers dans src/routes) + TanStack Query
-packages/
-  contracts/      code partagé hors OpenAPI : les 6 zones (slug = id du path SVG), événements WS
-  api-client/     généré par Orval depuis le contrat : hooks TanStack Query, schémas Zod, mocks MSW
-  tsconfig/       configurations TypeScript strictes partagées
-docker-compose.yml  Postgres 17
-```
-
-## La chaîne du contrat
-
-```
-DTO Zod (apps/api) → openapi.json → Orval → packages/api-client → apps/web
-```
-
-1. Les DTO sont des schémas Zod (`createZodDto`). `ZodValidationPipe` valide les entrées, `@ZodResponse` filtre les sorties et documente la réponse.
-2. `pnpm generate` construit l'API et écrit `apps/api/openapi.json` sans démarrer de serveur. En dev, l'API le réécrit à chaque redémarrage et `orval --watch` régénère le client.
-3. Orval produit dans `packages/api-client/src/generated/` les hooks (`useListZones`, `useCreatePresence`…), les types (`ZoneOccupancy`, `Presence`…), des schémas Zod et des handlers MSW.
-4. Un champ renommé dans un DTO casse donc la compilation du front.
-
-`openapi.json` et `src/generated/` ne sont pas versionnés : Turborepo les régénère avant `typecheck`, `test`, `build` et `dev`.
+| Commande (`pnpm --filter @concordance/web …`) | Ce qu'elle prouve |
+|---|---|
+| `proof:front` | Parcours complet sur les mocks, téléphone et tablette, dont le 409 et son rollback |
+| `proof:live` | Deux navigateurs sur la vraie API se mettent à jour sans recharger (après `pnpm db:up && pnpm build`) |
+| `proof:pwa` | L'app rouvre hors ligne avec la dernière occupation (après `pnpm --filter @concordance/web build`) |
 
 ## Contrat de l'API
 
@@ -88,4 +133,12 @@ DTO Zod (apps/api) → openapi.json → Orval → packages/api-client → apps/w
 | POST | `/api/presences` `{ zoneId }` | `useCreatePresence` | 201 `Presence` ; 409 `ZONE_FULL` / `ALREADY_PRESENT` |
 | PATCH | `/api/presences/:id` `{ status: "ENDED" }` | `useUpdatePresence` | `Presence` ; 403, 404, 409 `PRESENCE_ALREADY_ENDED` |
 
-Les erreurs métier suivent `ErrorResponse { statusCode, code, message }` ; le front lit `code`. Les erreurs de validation (400) gardent le format de nestjs-zod.
+## Ce qu'on ferait en production
+
+- **Identité** : le SSO RATP en OIDC à la place du pseudo, avec des rôles. Un superviseur pourrait clore le shift d'un autre manager avec le même `PATCH`, en élargissant seulement la règle d'autorisation.
+- **Plusieurs instances** : l'adapter Redis de socket.io, pour que chaque instance diffuse les événements des autres.
+- **Observabilité** : logs structurés (pino) avec un id de corrélation, traces et métriques OpenTelemetry, alertes sur les 409 et la latence de l'inscription.
+- **Vraie carte** : MapLibre sur les données ouvertes d'Île-de-France Mobilités à la place du SVG schématique, et PostGIS si les zones deviennent dynamiques.
+- **Shifts oubliés** : une expiration automatique après N heures (`@nestjs/schedule`).
+- **Livraison** : une CI hébergée (lint, typecheck, tests sur Postgres, build), des migrations jouées au déploiement et non au démarrage, la vérification en CI que le client généré est à jour, et AsyncAPI pour documenter le WebSocket.
+- **Hors ligne** : file d'inscriptions rejouées au retour du réseau (Background Sync), si le terrain le demande.
