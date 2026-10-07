@@ -51,7 +51,12 @@ export default defineConfig({
         runtimeCaching: [
           {
             // API en network-first : réponse fraîche si le réseau répond, dernière réponse connue sinon.
-            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith('/api/'),
+            // Sauf la session : une copie en cache survivrait à la déconnexion. Hors ligne, la
+            // session vient du cache TanStack persisté, purgé lui aussi à la déconnexion.
+            urlPattern: ({ url, sameOrigin }) =>
+              sameOrigin &&
+              url.pathname.startsWith('/api/') &&
+              !url.pathname.startsWith('/api/auth/'),
             handler: 'NetworkFirst',
             method: 'GET',
             options: {

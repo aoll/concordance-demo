@@ -111,8 +111,8 @@ async function run(name, device) {
       window.concordanceMocks?.occupy('saint-denis', who);
     }
   });
-  await panel.getByRole('alert').getByText("vient d'être complétée").waitFor();
-  check('409 ZONE_FULL : message clair', true);
+  await page.getByTestId('toast').getByText("vient d'être complétée").waitFor();
+  check('409 ZONE_FULL : toast avec un message clair', true);
   check(
     "fil d'activité : l'arrivée des autres managers est affichée",
     await panel.getByText('Lucas H. a rejoint Saint-Denis').isVisible(),

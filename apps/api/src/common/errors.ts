@@ -60,6 +60,9 @@ export class BusinessErrorFilter implements ExceptionFilter<BusinessError> {
   catch(error: BusinessError, host: ArgumentsHost): void {
     const statusCode = STATUS[error.code];
     const body: ErrorResponseDto = { statusCode, code: error.code, message: error.message };
-    host.switchToHttp().getResponse<Response>().status(statusCode).json(body);
+    const response = host.switchToHttp().getResponse<Response>();
+    // Lu par RequestLogger pour journaliser le code métier.
+    response.locals.errorCode = error.code;
+    response.status(statusCode).json(body);
   }
 }

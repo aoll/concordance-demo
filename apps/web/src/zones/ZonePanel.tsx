@@ -8,7 +8,12 @@ interface ZonePanelProps {
   shift: Presence | undefined;
   shiftZone: ZoneOccupancy | undefined;
   busy: boolean;
-  error: string | undefined;
+  offline: boolean;
+  /** Téléphone : état de la bottom sheet (sans effet sur tablette). */
+  sheetOpen: boolean;
+  onToggleSheet: () => void;
+  /** Liste des zones, affichée en tête de la bottom sheet sur téléphone. */
+  list?: ReactNode;
   onJoin: () => void;
   onEnd: () => void;
   children?: ReactNode;
@@ -21,7 +26,10 @@ export function ZonePanel({
   shift,
   shiftZone,
   busy,
-  error,
+  offline,
+  sheetOpen,
+  onToggleSheet,
+  list,
   onJoin,
   onEnd,
   children,
@@ -31,7 +39,15 @@ export function ZonePanel({
   const isMine = shift?.zoneId === zone.id;
 
   return (
-    <aside className="panel" aria-live="polite">
+    <aside className={sheetOpen ? 'panel open' : 'panel'} aria-live="polite">
+      <button
+        type="button"
+        className="grip"
+        aria-label={sheetOpen ? 'Replier le panneau' : 'Déplier le panneau'}
+        aria-expanded={sheetOpen}
+        onClick={onToggleSheet}
+      />
+      {list}
       <div className="zhead">
         <h2>{zone.name}</h2>
         <span className={`pill fill-${fill.key}`}>{fill.label}</span>
@@ -84,9 +100,9 @@ export function ZonePanel({
           Je m'inscris ici
         </button>
       )}
-      {error && (
-        <p className="err" role="alert">
-          {error}
+      {offline && (
+        <p className="hint">
+          Hors ligne : inscription et fin de shift reprennent au retour du réseau.
         </p>
       )}
       {children}

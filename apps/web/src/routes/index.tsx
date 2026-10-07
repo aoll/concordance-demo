@@ -1,16 +1,20 @@
 import { type Manager, useListZones } from '@concordance/api-client';
-import { ZoneSlugSchema } from '@concordance/contracts';
+import { type ZoneSlug, ZoneSlugSchema } from '@concordance/contracts';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useCallback, useState } from 'react';
 import { z } from 'zod';
 import { LiveBadge, LiveFeed } from '../live/LiveFeed';
 import { useLiveZones } from '../live/useLiveZones';
 import { ZoneMap } from '../map/ZoneMap';
+import { useOnline } from '../pwa/OfflineBanner';
 import { useSession } from '../session/useSession';
 import { isOptimistic } from '../shift/cache';
 import { errorMessage } from '../shift/errors';
 import { ShiftBanner } from '../shift/ShiftBanner';
+import { Toast } from '../shift/Toast';
 import { useMyShift, useShiftMutations } from '../shift/useShift';
 import { FILL_KEYS, fillLabel } from '../zones/fill';
+import { ZoneList } from '../zones/ZoneList';
 import { ZonePanel } from '../zones/ZonePanel';
 
 // La zone sélectionnée vit dans l'URL (?zone=la-defense) : partageable et conservée au rechargement.
@@ -30,8 +34,17 @@ function ZonesScreen({ me }: { me: Manager }) {
   const shift = useMyShift(me);
   const { join, end } = useShiftMutations(me);
   const live = useLiveZones(me);
+  const online = useOnline();
   const { zone: selectedSlug } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
+  // Bottom sheet du téléphone : repliée sur la liste et le détail court, dépliée sur tout le panneau.
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const { reset: resetJoin } = join;
+  const { reset: resetEnd } = end;
+  const dismissError = useCallback(() => {
+    resetJoin();
+    resetEnd();
+  }, [resetJoin, resetEnd]);
 
   // Des données (même restaurées hors ligne) priment sur une erreur de refetch.
   if (!zones.data) {
@@ -48,12 +61,18 @@ function ZonesScreen({ me }: { me: Manager }) {
   const selected =
     zones.data.find((zone) => zone.slug === selectedSlug) ?? shiftZone ?? zones.data[0];
   // Une fin de shift sur une présence encore provisoire n'aurait pas d'id serveur.
-  const busy = join.isPending || end.isPending || (shift ? isOptimistic(shift) : false);
+  // Hors ligne, les écritures échoueraient : les boutons d'inscription et de fin de shift sont coupés.
+  const busy = !online || join.isPending || end.isPending || (shift ? isOptimistic(shift) : false);
   const error = join.isError
     ? errorMessage(join.error)
     : end.isError
       ? errorMessage(end.error)
       : undefined;
+
+  const select = (zone: ZoneSlug) => {
+    dismissError();
+    void navigate({ search: { zone }, replace: true });
+  };
 
   const endShift = () => {
     if (shift) end.mutate({ id: shift.id, data: { status: 'ENDED' } });
@@ -68,11 +87,7 @@ function ZonesScreen({ me }: { me: Manager }) {
             zones={zones.data}
             selected={selected?.slug}
             flashing={live.flashing}
-            onSelect={(zone) => {
-              join.reset();
-              end.reset();
-              void navigate({ search: { zone }, replace: true });
-            }}
+            onSelect={select}
           />
           <div className="legend">
             {FILL_KEYS.map((key) => (
@@ -91,7 +106,10 @@ function ZonesScreen({ me }: { me: Manager }) {
             shift={shift}
             shiftZone={shiftZone}
             busy={busy}
-            error={error}
+            offline={!online}
+            sheetOpen={sheetOpen}
+            onToggleSheet={() => setSheetOpen((open) => !open)}
+            list={<ZoneList zones={zones.data} selected={selected.slug} onSelect={select} />}
             onJoin={() => join.mutate({ data: { zoneId: selected.id } })}
             onEnd={endShift}
           >
@@ -99,6 +117,7 @@ function ZonesScreen({ me }: { me: Manager }) {
           </ZonePanel>
         )}
       </div>
+      {error && <Toast message={error} onClose={dismissError} />}
     </>
   );
 }

@@ -1,4 +1,4 @@
-/* Repris de la maquette validée. Téléphone : carte puis panneau ; tablette (≥ 720 px) : côte à côte. */
+/* Repris de la maquette validée. Téléphone : carte et bottom sheet ; tablette (≥ 720 px) : côte à côte. */
 @import "@fontsource/barlow-semi-condensed/600.css";
 @import "@fontsource/barlow-semi-condensed/700.css";
 @import "@fontsource/source-sans-3/400.css";
@@ -132,20 +132,138 @@ body {
   min-width: 0;
 }
 .panel {
-  border-top: 1px solid var(--line);
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-width: 0;
 }
+
+/* Téléphone : la carte occupe l'écran, le panneau est une bottom sheet qui liste les zones. */
+@media (max-width: 719.98px) {
+  .app {
+    padding-bottom: 46dvh;
+  }
+  .panel {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 10;
+    max-height: 46dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 6px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -8px 24px rgb(0 0 0 / 0.12);
+    transition: max-height 0.25s ease;
+  }
+  .panel.open {
+    max-height: 88dvh;
+  }
+  /* La sheet défile : ses blocs gardent leur hauteur au lieu de rétrécir. */
+  .panel > * {
+    flex-shrink: 0;
+  }
+}
+.grip {
+  align-self: center;
+  width: 48px;
+  height: 20px;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  flex: none;
+}
+.grip::before {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 5px;
+  margin: 0 auto;
+  border-radius: 3px;
+  background: var(--line);
+}
+.zlist {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 -16px;
+  padding: 0 16px 2px;
+  scrollbar-width: none;
+}
+.zlist button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 600 0.82rem var(--font-body);
+  cursor: pointer;
+}
+.zlist button.on {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.zlist b {
+  font: 500 0.75rem var(--font-mono);
+  color: var(--muted);
+}
+
 @media (min-width: 720px) {
   .app {
     grid-template-columns: minmax(0, 1fr) 320px;
   }
   .panel {
-    border-top: 0;
     border-left: 1px solid var(--line);
+  }
+  /* Tablette : carte et panneau côte à côte, la liste et la poignée sont inutiles. */
+  .grip,
+  .zlist {
+    display: none;
+  }
+}
+
+/* Toast des erreurs d'inscription ou de fin de shift, au-dessus de la bottom sheet. */
+.toast {
+  position: fixed;
+  z-index: 20;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(440px, calc(100vw - 32px));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--full);
+  color: #fff;
+  font-size: 0.92rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.2);
+  animation: toast-in 0.2s ease-out;
+}
+.toast span {
+  flex: 1;
+}
+.toast button {
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
   }
 }
 
