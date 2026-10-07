@@ -14,6 +14,8 @@ pnpm dev          # Postgres (Docker) + API (:3000) + front (:5173) + régénér
 - Front : http://localhost:5173 (le proxy Vite envoie `/api` vers l'API)
 - API : http://localhost:3000/api, Swagger : http://localhost:3000/docs
 - Front sur le faux back MSW, sans API : `pnpm --filter @concordance/web dev:mocks`
+  (écritures ralenties de 600 ms pour voir l'optimisme ; `window.concordanceMocks.occupy('orly', 'Léa')` simule un autre manager)
+- Preuve du parcours front (téléphone et tablette, captures dans `apps/web/front-proof`) : `pnpm --filter @concordance/web proof:front`
 
 ## Vérifier (la « CI » est locale)
 
