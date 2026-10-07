@@ -8,6 +8,7 @@ interface ZonePanelProps {
   shift: Presence | undefined;
   shiftZone: ZoneOccupancy | undefined;
   busy: boolean;
+  offline: boolean;
   /** Téléphone : état de la bottom sheet (sans effet sur tablette). */
   sheetOpen: boolean;
   onToggleSheet: () => void;
@@ -25,6 +26,7 @@ export function ZonePanel({
   shift,
   shiftZone,
   busy,
+  offline,
   sheetOpen,
   onToggleSheet,
   list,
@@ -97,6 +99,11 @@ export function ZonePanel({
         <button type="button" className="btn" onClick={onJoin} disabled={busy}>
           Je m'inscris ici
         </button>
+      )}
+      {offline && (
+        <p className="hint">
+          Hors ligne : inscription et fin de shift reprennent au retour du réseau.
+        </p>
       )}
       {children}
     </aside>

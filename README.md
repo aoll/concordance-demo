@@ -83,7 +83,7 @@ Schéma dans `apps/api/src/database/schema.ts`, migrations versionnées dans `ap
 1. **Un manager dans au plus une zone** : index unique partiel `presences(manager_id) WHERE ended_at IS NULL`.
 2. **Une zone ne dépasse jamais sa capacité** : l'inscription est une transaction qui verrouille la ligne de la zone (`SELECT … FOR UPDATE`), compte les présences actives, puis insère. Deux inscriptions sur la même zone passent l'une après l'autre. Le test `presences.concurrency.spec.ts` lance 30 inscriptions simultanées sur une zone de capacité 3 et vérifie qu'il en passe exactement 3 ; sans le verrou, il en passe 4 à 6.
 
-Les services lèvent des erreurs métier (`ZoneFullError`…) sans connaître HTTP ; un filtre d'exception les traduit en `ErrorResponse { statusCode, code, message }` (409 `ZONE_FULL` ou `ALREADY_PRESENT`, 403, 404). Le front lit `code` pour afficher son message.
+Les services lèvent des erreurs métier (`ZoneFullError`…) sans connaître HTTP ; un filtre d'exception les traduit en `ErrorResponse { statusCode, code, message }` (409 `ZONE_FULL` ou `ALREADY_PRESENT`, 403, 404). Le front lit `code` pour afficher son message. Un middleware écrit une ligne de log par requête (méthode, route, statut, code métier, durée), refus du guard et de la validation compris.
 
 La fin de shift est un `PATCH /presences/:id { status: "ENDED" }` et non un `DELETE` : on garde l'historique.
 
@@ -91,12 +91,12 @@ La fin de shift est un `PATCH /presences/:id { status: "ENDED" }` et non un `DEL
 
 Après le commit d'une inscription ou d'une fin de shift, `PresenceGateway` diffuse `zone.occupancy.updated` avec l'occupation complète de la zone. Le front (`apps/web/src/live/`) l'écrit dans le cache TanStack Query par `setQueryData`, sans refetch : la carte, le panneau et le fil « Activité en direct » suivent, et la zone clignote. L'événement porte l'état complet, donc l'appliquer deux fois ne change rien ; après une coupure, le front refetch une fois pour rattraper ce qu'il a manqué.
 
-L'inscription elle-même est optimiste : la carte bouge avant la réponse, et un 409 annule la mise à jour avec un message clair.
+L'inscription elle-même est optimiste : la carte bouge avant la réponse, et un 409 annule la mise à jour avec un toast clair. Sur téléphone, le panneau est une bottom sheet qui liste les zones sous la carte ; sur tablette, il est à côté.
 
 ## PWA et hors ligne
 
 - `vite-plugin-pwa` (Workbox) : manifest, icônes, shell précaché, `/api` en network-first (la dernière réponse connue sert si le réseau ne répond pas en 3 s).
-- Le cache TanStack Query est persisté dans IndexedDB : l'app rouvre en mode avion avec la dernière occupation connue et un bandeau « Hors ligne ». En ligne, le cache restauré est revalidé aussitôt. La déconnexion purge ce cache.
+- Le cache TanStack Query est persisté dans IndexedDB : l'app rouvre en mode avion avec la dernière occupation connue et un bandeau « Hors ligne ». En ligne, le cache restauré est revalidé aussitôt. La déconnexion purge ce cache. Hors ligne, l'inscription et la fin de shift sont désactivées.
 
 ## Identité
 

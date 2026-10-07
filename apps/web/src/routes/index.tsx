@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { LiveBadge, LiveFeed } from '../live/LiveFeed';
 import { useLiveZones } from '../live/useLiveZones';
 import { ZoneMap } from '../map/ZoneMap';
+import { useOnline } from '../pwa/OfflineBanner';
 import { useSession } from '../session/useSession';
 import { isOptimistic } from '../shift/cache';
 import { errorMessage } from '../shift/errors';
@@ -33,6 +34,7 @@ function ZonesScreen({ me }: { me: Manager }) {
   const shift = useMyShift(me);
   const { join, end } = useShiftMutations(me);
   const live = useLiveZones(me);
+  const online = useOnline();
   const { zone: selectedSlug } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   // Bottom sheet du téléphone : repliée sur la liste et le détail court, dépliée sur tout le panneau.
@@ -59,7 +61,8 @@ function ZonesScreen({ me }: { me: Manager }) {
   const selected =
     zones.data.find((zone) => zone.slug === selectedSlug) ?? shiftZone ?? zones.data[0];
   // Une fin de shift sur une présence encore provisoire n'aurait pas d'id serveur.
-  const busy = join.isPending || end.isPending || (shift ? isOptimistic(shift) : false);
+  // Hors ligne, les écritures échoueraient : les boutons d'inscription et de fin de shift sont coupés.
+  const busy = !online || join.isPending || end.isPending || (shift ? isOptimistic(shift) : false);
   const error = join.isError
     ? errorMessage(join.error)
     : end.isError
@@ -103,6 +106,7 @@ function ZonesScreen({ me }: { me: Manager }) {
             shift={shift}
             shiftZone={shiftZone}
             busy={busy}
+            offline={!online}
             sheetOpen={sheetOpen}
             onToggleSheet={() => setSheetOpen((open) => !open)}
             list={<ZoneList zones={zones.data} selected={selected.slug} onSelect={select} />}
