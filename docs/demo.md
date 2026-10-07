@@ -2,11 +2,13 @@
 
 ## Avant l'entretien
 
-1. Repartir de la base de la maquette : `pnpm db:down && docker volume rm concordance-demo_db-data`.
-2. `pnpm demo`, puis ouvrir http://localhost:4173 dans deux fenêtres Chrome côte à côte :
+La démo se fait sur la version déployée sur Railway : une URL publique en HTTPS, la même image que l'on décrit dans le README.
+
+1. Vérifier le déploiement : `APP_URL=https://<domaine>.up.railway.app pnpm --filter @concordance/web proof:deploy`. Il laisse ses shifts de test terminés ; après une répétition, terminer aussi les shifts d'Alex et de Kenza pour retrouver l'occupation de la maquette (Orly vide, La Défense pleine).
+2. Ouvrir l'URL Railway dans deux fenêtres Chrome côte à côte :
    - à gauche, une fenêtre normale en mode responsive « iPad » (DevTools) : la **tablette d'Alex** ;
    - à droite, une fenêtre de navigation privée en mode « Pixel 7 » : le **téléphone de Kenza** (le cookie de session est séparé).
-3. Garder un terminal ouvert à la racine du repo, et l'éditeur sur `apps/api/src/presences/presences.dto.ts`.
+3. Garder un terminal ouvert à la racine du repo, et l'éditeur sur `apps/api/src/presences/presences.dto.ts`. Le test de concurrence (2:15) tourne en local sur Postgres : lancer `pnpm db:up` avant.
 
 ## Déroulé
 
@@ -24,5 +26,5 @@
 
 ## Si quelque chose casse
 
-- Port 3000, 4173 ou 5432 déjà pris : arrêter l'autre processus, ou `pnpm db:down` puis relancer.
-- Pas de Docker sur la machine : montrer la version déployée sur Railway (même image, voir le README).
+- Railway injoignable : basculer en local. `pnpm db:down && docker volume rm concordance-demo_db-data` pour repartir de la maquette, puis `pnpm demo` et ouvrir http://localhost:4173 (Docker requis). Le déroulé est identique.
+- En local, port 3000, 4173 ou 5432 déjà pris : arrêter l'autre processus, ou `pnpm db:down` puis relancer.
