@@ -1,0 +1,26 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "stream",
+  "agentGuidance": false,
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build", "^generate"],
+      "outputs": ["dist/**"]
+    },
+    "generate": {
+      "dependsOn": ["^generate", "^build"],
+      "outputs": ["openapi.json", "src/generated/**", "src/routeTree.gen.ts"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build", "^generate", "generate"]
+    },
+    "test": {
+      "dependsOn": ["^build", "^generate", "generate"]
+    },
+    "dev": {
+      "dependsOn": ["^build", "^generate"],
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

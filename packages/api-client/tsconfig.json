@@ -1,0 +1,8 @@
+{
+  "extends": "@concordance/tsconfig/library.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx"
+  },
+  "include": ["src", "orval.config.ts"]
+}

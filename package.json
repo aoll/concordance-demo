@@ -1,0 +1,25 @@
+{
+  "name": "concordance-demo",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "docker compose up -d --wait db && turbo run dev",
+    "db:up": "docker compose up -d --wait db",
+    "db:down": "docker compose down",
+    "generate": "turbo run generate",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "check": "biome check . && turbo run typecheck test build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "turbo": "^2.11.7",
+    "typescript": "~5.9.3"
+  }
+}

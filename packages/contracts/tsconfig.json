@@ -1,0 +1,4 @@
+{
+  "extends": "@concordance/tsconfig/library.json",
+  "include": ["src", "tsup.config.ts"]
+}
