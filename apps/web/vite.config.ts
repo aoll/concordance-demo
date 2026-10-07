@@ -1,12 +1,71 @@
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  plugins: [tanstackRouter({ target: 'react', autoCodeSplitting: true }), react()],
+  plugins: [
+    tanstackRouter({ target: 'react', autoCodeSplitting: true }),
+    react(),
+    VitePWA({
+      // En mode mocks, MSW occupe déjà la portée « / » avec son propre service worker.
+      disable: process.env.VITE_API_MOCKS === 'true',
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon-180x180.png'],
+      manifest: {
+        name: 'Concordance',
+        short_name: 'Concordance',
+        description: 'Présence des managers sur les zones du réseau',
+        lang: 'fr',
+        start_url: '/',
+        scope: '/',
+        display: 'standalone',
+        orientation: 'any',
+        theme_color: '#0b3d91',
+        background_color: '#ffffff',
+        icons: [
+          { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+          {
+            src: 'maskable-icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+      },
+      workbox: {
+        // Shell en cache : JS, CSS, HTML et icônes précachés, toute navigation retombe sur index.html.
+        globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+        globIgnores: ['mockServiceWorker.js'],
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//],
+        runtimeCaching: [
+          {
+            // API en network-first : réponse fraîche si le réseau répond, dernière réponse connue sinon.
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith('/api/'),
+            handler: 'NetworkFirst',
+            method: 'GET',
+            options: {
+              cacheName: 'api',
+              networkTimeoutSeconds: 3,
+              expiration: { maxAgeSeconds: 60 * 60 * 24 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+        ],
+      },
+    }),
+  ],
   server: {
     port: 5173,
     // Même origine pour le front et l'API : le cookie de session passe sans CORS.
+    proxy: { '/api': 'http://localhost:3000' },
+  },
+  preview: {
+    port: 4173,
     proxy: { '/api': 'http://localhost:3000' },
   },
 });
