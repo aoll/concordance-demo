@@ -14,10 +14,10 @@ const FEED_SIZE = 8;
 const FLASH_MS = 900;
 
 /**
- * Temps réel : chaque `zone.occupancy.updated` est validé par le schéma partagé puis écrit
- * directement dans le cache TanStack Query (`setQueryData`), sans refetch. La carte, le panneau
- * et le bandeau suivent puisqu'ils lisent ce cache. Après une coupure, on refetch une fois pour
- * rattraper les événements manqués.
+ * Real time: each `zone.occupancy.updated` is validated by the shared schema then written
+ * directly into the TanStack Query cache (`setQueryData`), without a refetch. The map, the panel
+ * and the banner follow since they read this cache. After a disconnection, we refetch once to
+ * catch up on missed events.
  */
 export function useLiveZones(me: Manager) {
   const queryClient = useQueryClient();
@@ -45,12 +45,12 @@ export function useLiveZones(me: Manager) {
     const unsubscribe = subscribeLive({
       onEvent: (raw) => {
         const parsed = ZoneOccupancyUpdatedSchema.safeParse(raw);
-        if (!parsed.success) return; // Contrat non respecté : on ignore plutôt que corrompre le cache.
+        if (!parsed.success) return; // Contract violated: ignore rather than corrupt the cache.
         const event = parsed.data;
         queryClient.setQueryData<ZoneOccupancy[]>(zonesKey, (zones) =>
           withZoneSnapshot(zones, event.zone),
         );
-        // Mon propre shift a changé ailleurs (autre onglet, autre appareil) : on relit ma présence.
+        // My own shift changed elsewhere (another tab, another device): re-read my presence.
         if (event.change.manager.id === me.id) {
           void queryClient.invalidateQueries({
             queryKey: getListPresencesQueryKey({ managerId: me.id, active: 'true' }),

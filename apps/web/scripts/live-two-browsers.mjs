@@ -1,8 +1,8 @@
-// Preuve du lot 5 : deux navigateurs côte à côte sur la vraie API (Nest + Postgres).
-// Ce que fait l'un apparaît chez l'autre sans recharger la page, et sans refetch de GET /zones :
-// l'événement socket.io est écrit directement dans le cache TanStack Query.
-// Prérequis : Postgres du docker compose (pnpm db:up) et l'API buildée (pnpm build).
-// Base dédiée concordance_proof, recréée à chaque run. Captures dans $PROOF_DIR (./live-proof).
+// Proof for lot 5: two browsers side by side on the real API (Nest + Postgres).
+// What one does shows up in the other without reloading the page, and without refetching GET /zones:
+// the socket.io event is written directly into the TanStack Query cache.
+// Prerequisites: Postgres from docker compose (pnpm db:up) and the built API (pnpm build).
+// Dedicated concordance_proof database, recreated on every run. Screenshots in $PROOF_DIR (./live-proof).
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdir, readFile } from 'node:fs/promises';
 import { chromium, devices } from 'playwright-core';
@@ -24,7 +24,7 @@ const waitFor = (child, text, name) =>
   new Promise((resolve, reject) => {
     const onData = (chunk) => chunk.toString().includes(text) && resolve();
     child.stdout.on('data', onData);
-    // Les coupures de socket à la fermeture des navigateurs font râler le proxy de Vite : bruit.
+    // Socket drops when the browsers close make Vite's proxy complain: noise.
     child.stderr.on('data', (chunk) => {
       if (!/ws proxy|ECONNRESET|EPIPE|stream_base_commons/.test(chunk)) {
         process.stderr.write(`[${name}] ${chunk}`);
@@ -43,7 +43,7 @@ const api = spawn('node', ['dist/main.js'], {
     DATABASE_URL: `postgres://concordance:concordance@localhost:5432/${DB}`,
   },
 });
-// Arrêt garanti des deux serveurs, y compris si l'un ne démarre pas.
+// Guaranteed shutdown of both servers, even if one fails to start.
 const children = [api];
 process.on('exit', () => {
   for (const child of children) child.kill();
@@ -64,7 +64,7 @@ const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH ?? '/opt/pw-browsers/chromium',
 });
 
-/** Un navigateur isolé (cookies à part) connecté sous un pseudo. */
+/** An isolated browser (separate cookies) logged in under a nickname. */
 async function open(name, device, pseudo) {
   const context = await browser.newContext({ ...device, locale: 'fr-FR' });
   const page = await context.newPage();
@@ -73,7 +73,7 @@ async function open(name, device, pseudo) {
   let sockets = 0;
   page.on('websocket', (ws) => ws.url().includes('/socket.io/') && sockets++);
   const errors = [];
-  // Le 401 de GET /auth/session avant connexion est attendu (« pas connecté »).
+  // The 401 from GET /auth/session before login is expected ("not logged in").
   page.on(
     'console',
     (m) => m.type() === 'error' && !m.text().includes('401') && errors.push(m.text()),
@@ -97,7 +97,7 @@ async function open(name, device, pseudo) {
   };
 }
 
-/** Les deux captures côte à côte dans une seule image, comme deux écrans posés sur la table. */
+/** Both screenshots side by side in a single image, like two screens laid on a table. */
 async function sideBySide(step, a, b) {
   await Promise.all([a.shot(step), b.shot(step)]);
   const src = async (who) =>
@@ -112,7 +112,7 @@ async function sideBySide(step, a, b) {
   await page.close();
 }
 
-/** Aucun GET /zones pendant `during` : la mise à jour vient du WebSocket, pas d'un refetch. */
+/** No GET /zones during `during`: the update comes from the WebSocket, not from a refetch. */
 async function withoutRefetch(viewer, during) {
   const before = viewer.zoneFetches.length;
   await during();
@@ -132,7 +132,7 @@ try {
   await alex.zone('Orly').click();
   await sideBySide('1-depart', alex, kenza);
 
-  // Kenza s'inscrit sur Orly depuis son téléphone : la tablette d'Alex suit.
+  // Kenza signs up at Orly from her phone: Alex's tablet follows.
   const noRefetch1 = await withoutRefetch(alex, async () => {
     await kenza.zone('Orly').click();
     await kenza.panel.getByRole('button', { name: "Je m'inscris ici" }).click();
@@ -154,7 +154,7 @@ try {
   );
   await sideBySide('2-kenza-inscrite', alex, kenza);
 
-  // Alex rejoint Orly à son tour : le téléphone de Kenza suit.
+  // Alex joins Orly in turn: Kenza's phone follows.
   await alex.panel.getByRole('button', { name: "Je m'inscris ici" }).click();
   await kenza.count('Orly').getByText('2/3').waitFor({ timeout: 3000 });
   check(
@@ -163,7 +163,7 @@ try {
   );
   await sideBySide('3-alex-inscrit', alex, kenza);
 
-  // Kenza termine son shift : Orly redescend chez Alex.
+  // Kenza ends her shift: Orly drops back to Alex.
   const noRefetch2 = await withoutRefetch(alex, async () => {
     await kenza.page.locator('.shift').getByRole('button', { name: 'Terminer mon shift' }).click();
     await alex.count('Orly').getByText('1/3').waitFor({ timeout: 3000 });
@@ -175,7 +175,7 @@ try {
   );
   await sideBySide('4-fin-de-shift', alex, kenza);
 
-  // Le cache nourri par les événements doit correspondre à ce que renvoie l'API au rechargement.
+  // The cache fed by events must match what the API returns on reload.
   const live = await kenza.count('Orly').textContent();
   await kenza.page.reload();
   await kenza.count('Orly').waitFor();

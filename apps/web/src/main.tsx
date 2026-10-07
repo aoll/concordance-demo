@@ -24,8 +24,8 @@ createRoot(root).render(
     <PersistQueryClientProvider
       client={queryClient}
       persistOptions={persistOptions}
-      // Le cache restauré peut retarder d'un événement (sauvegarde différée d'1 s, coupure) :
-      // on le revalide aussitôt, ce qui ne refetch qu'une fois et ne fait rien hors ligne.
+      // The restored cache may lag by one event (1 s deferred save, disconnection):
+      // we revalidate it right away, which refetches only once and does nothing offline.
       onSuccess={() => queryClient.invalidateQueries()}
     >
       <OfflineBanner />

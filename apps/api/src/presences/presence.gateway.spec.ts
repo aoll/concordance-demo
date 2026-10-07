@@ -14,7 +14,7 @@ describe('temps réel (lot 5b)', () => {
   let events: ZoneOccupancyUpdated[];
   let orlyId: string;
 
-  /** Attend le n-ième événement reçu (les diffusions arrivent après la réponse HTTP). */
+  /** Waits for the nth received event (broadcasts arrive after the HTTP response). */
   const nth = (n: number) =>
     new Promise<ZoneOccupancyUpdated>((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error(`événement ${n} jamais reçu`)), 2000);

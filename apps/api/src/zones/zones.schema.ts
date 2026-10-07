@@ -7,11 +7,11 @@ export const zones = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     name: text('name').notNull(),
     capacity: integer('capacity').notNull(),
-    /** Ordre d'affichage dans les listes. */
+    /** Display order in lists. */
     position: integer('position').notNull(),
-    /** Tracé SVG de la zone sur le plan schématique (viewBox 800 × 600). */
+    /** SVG outline of the zone on the schematic plan (viewBox 800 × 600). */
     shape: text('shape').notNull(),
-    /** Position de l'étiquette (nom + compteur) sur le plan. */
+    /** Position of the label (name + counter) on the plan. */
     labelX: integer('label_x').notNull(),
     labelY: integer('label_y').notNull(),
   },

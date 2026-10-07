@@ -1,2 +1,2 @@
-// Schémas Zod générés depuis le même contrat (validation de formulaires côté front).
+// Zod schemas generated from the same contract (form validation on the front end).
 export * from './generated/zod/index.zod';

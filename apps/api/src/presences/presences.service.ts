@@ -42,10 +42,10 @@ export class PresencesService {
   }
 
   /**
-   * Inscription. La capacité est garantie par la base, pas par le code applicatif seul :
-   * `SELECT … FOR UPDATE` sur la zone sérialise les inscriptions concurrentes sur cette zone,
-   * le comptage et l'insertion se font donc sans qu'une autre transaction s'intercale.
-   * L'index unique partiel couvre le dernier cas : le même manager sur deux zones à la fois.
+   * Sign-up. Capacity is guaranteed by the database, not by application code alone:
+   * `SELECT … FOR UPDATE` on the zone serializes concurrent sign-ups on that zone,
+   * so counting and inserting happen without another transaction slipping in between.
+   * The partial unique index covers the last case: the same manager on two zones at once.
    */
   async create(manager: ManagerRow, zoneId: string): Promise<PresenceDto> {
     try {
@@ -79,14 +79,14 @@ export class PresencesService {
     }
   }
 
-  /** Fin de shift : seul l'auteur de la présence peut la clore (un superviseur, demain). */
+  /** End of shift: only the presence's author can close it (a supervisor, tomorrow). */
   async end(manager: ManagerRow, id: string): Promise<PresenceDto> {
     const [presence] = await this.db.select().from(presences).where(eq(presences.id, id));
     if (!presence) throw new NotFoundError('Présence inconnue.');
     if (presence.managerId !== manager.id) {
       throw new ForbiddenError('Cette présence appartient à un autre manager.');
     }
-    // La condition `ended_at IS NULL` protège aussi de deux fins de shift simultanées.
+    // The `ended_at IS NULL` condition also protects against two simultaneous shift ends.
     const [ended] = await this.db
       .update(presences)
       .set({ endedAt: sql`now()` })
@@ -98,9 +98,9 @@ export class PresencesService {
   }
 
   /**
-   * Diffusion après commit : l'occupation est relue en base, les autres clients ne voient donc
-   * jamais un état qui n'a pas été validé. Un échec de diffusion ne fait pas échouer la requête :
-   * le changement est enregistré, les clients se resynchronisent au prochain chargement.
+   * Broadcast after commit: occupancy is re-read from the database, so other clients never
+   * see a state that was not committed. A broadcast failure does not fail the request:
+   * the change is saved, and clients resynchronize on their next load.
    */
   private async announce(kind: 'joined' | 'left', manager: ManagerRow, zoneId: string) {
     try {
@@ -125,7 +125,7 @@ function toPresence(row: PresenceRow): PresenceDto {
   };
 }
 
-/** Violation d'unicité Postgres (23505) sur la contrainte donnée, éventuellement enveloppée par Drizzle. */
+/** Postgres uniqueness violation (23505) on the given constraint, possibly wrapped by Drizzle. */
 function isUniqueViolation(error: unknown, constraint: string): boolean {
   for (let current = error; current instanceof Error; current = current.cause) {
     const pgError = current as Error & { code?: string; constraint?: string };

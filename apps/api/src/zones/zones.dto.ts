@@ -7,9 +7,9 @@ export const ZoneOccupancySchema = z.object({
   id: z.uuid(),
   name: z.string(),
   capacity: z.int().positive(),
-  /** Tracé de la zone sur le plan schématique : le front dessine la carte à partir de l'API. */
+  /** Outline of the zone on the schematic plan: the front end draws the map from the API. */
   shape: ZoneShapeSchema,
-  /** Nombre de présences actives (endedAt null). */
+  /** Number of active presences (endedAt null). */
   occupied: z.int().nonnegative(),
   managers: z.array(ManagerSchema),
 });

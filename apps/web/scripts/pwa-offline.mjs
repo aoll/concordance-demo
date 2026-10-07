@@ -1,6 +1,6 @@
-// Preuve du lot 6 : l'app est installable et rouvre en mode avion avec la dernière occupation connue.
-// Prérequis : `pnpm --filter @concordance/web build`. Lance un faux back sur :3000, `vite preview` sur :4173,
-// puis un Chromium mobile piloté par Playwright. Captures dans $PROOF_DIR (par défaut ./pwa-proof).
+// Proof for lot 6: the app is installable and reopens in airplane mode with the last known occupancy.
+// Prerequisites: `pnpm --filter @concordance/web build`. Starts a fake back end on :3000, `vite preview` on :4173,
+// then a mobile Chromium driven by Playwright. Screenshots in $PROOF_DIR (default ./pwa-proof).
 import { spawn } from 'node:child_process';
 import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
@@ -11,8 +11,8 @@ import { chromium, devices } from 'playwright-core';
 const PROOF_DIR = process.env.PROOF_DIR ?? 'pwa-proof';
 const APP = 'http://localhost:4173';
 
-// Occupation figée reprise de la maquette, au format ZoneOccupancy du contrat. Le tracé est un
-// simple disque autour de l'étiquette : cette preuve porte sur le hors ligne, pas sur la carte.
+// Frozen occupancy taken from the mockup, in the contract's ZoneOccupancy format. The outline is a
+// simple disc around the label: this proof is about offline mode, not about the map.
 const disc = (x, y) => `M${x - 50},${y + 20} a50,50 0 1,0 100,0 a50,50 0 1,0 -100,0 Z`;
 const zones = [
   ['Paris rive droite', 6, [472, 256], ['Karim B.', 'Sophie T.', 'Julien R.']],
@@ -30,7 +30,7 @@ const zones = [
   managers: names.map((displayName) => ({ id: crypto.randomUUID(), displayName })),
 }));
 
-// L'app n'affiche la carte qu'à un manager connecté, sans shift en cours ici.
+// The app only shows the map to a logged-in manager, with no shift in progress here.
 const routes = {
   '/api/zones': zones,
   '/api/auth/session': { manager: { id: crypto.randomUUID(), displayName: 'Alex L.' } },
@@ -58,7 +58,7 @@ const check = (label, ok) => {
   if (!ok) process.exitCode = 1;
 };
 
-// Profil persistant : Chromium refuse l'installation en navigation privée.
+// Persistent profile: Chromium refuses installation in incognito mode.
 const profile = await mkdtemp(join(tmpdir(), 'pwa-proof-'));
 const context = await chromium.launchPersistentContext(profile, {
   ...devices['Pixel 7'],
@@ -70,7 +70,7 @@ try {
   const page = context.pages()[0] ?? (await context.newPage());
   const cdp = await context.newCDPSession(page);
 
-  // 1. En ligne : premier chargement, le service worker s'installe et prend la main.
+  // 1. Online: first load, the service worker installs and takes control.
   await page.goto(APP);
   await page.evaluate(() => navigator.serviceWorker.ready);
   await page.reload();
@@ -90,7 +90,7 @@ try {
   );
   await page.screenshot({ path: `${PROOF_DIR}/1-en-ligne.png` });
 
-  // Laisse le persister (throttle 1 s) écrire le cache TanStack Query dans IndexedDB.
+  // Lets the persister (1 s throttle) write the TanStack Query cache to IndexedDB.
   await page.waitForTimeout(1500);
   check(
     'cache TanStack Query persisté dans IndexedDB',
@@ -111,7 +111,7 @@ try {
     ),
   );
 
-  // 2. Mode avion : plus de réseau ni d'API, on rouvre l'app.
+  // 2. Airplane mode: no network or API, we reopen the app.
   api.close();
   await context.setOffline(true);
   await page.reload();
@@ -127,7 +127,7 @@ try {
   );
   await page.screenshot({ path: `${PROOF_DIR}/2-mode-avion.png` });
 
-  // 3. Retour du réseau : le bandeau disparaît.
+  // 3. Network is back: the banner disappears.
   await context.setOffline(false);
   await page.getByRole('status').filter({ hasText: 'Hors ligne' }).waitFor({ state: 'detached' });
   check('retour en ligne : bandeau masqué', true);

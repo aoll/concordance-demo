@@ -13,7 +13,7 @@ export class ZonesService {
   constructor(@Inject(DB) private readonly db: Database) {}
 
   async list(): Promise<ZoneOccupancyDto[]> {
-    // Ordre d'affichage défini en base (colonne position), pas l'ordre alphabétique.
+    // Display order defined in the database (position column), not alphabetical order.
     const rows = await this.db.select().from(zones).orderBy(asc(zones.position), asc(zones.name));
     return this.occupancies(rows);
   }
@@ -24,7 +24,7 @@ export class ZonesService {
     return one(await this.occupancies(rows));
   }
 
-  /** Zones + managers en shift : deux requêtes, assemblées en mémoire (quelques zones). */
+  /** Zones + managers on shift: two queries, assembled in memory (a few zones). */
   private async occupancies(rows: ZoneRow[]): Promise<ZoneOccupancyDto[]> {
     const active = await this.db
       .select({ zoneId: presences.zoneId, id: managers.id, displayName: managers.displayName })

@@ -2,7 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { ManagerSchema } from '../managers/manager.dto';
 
-/** Pas de vraie auth pour la démo : un pseudo suffit (la cible serait le SSO RATP en OIDC). */
+/** No real auth for the demo: a username is enough (the target would be RATP SSO via OIDC). */
 export const LoginSchema = z.object({
   displayName: z.string().trim().min(2).max(40),
 });

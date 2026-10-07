@@ -1,6 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
-/** Squelette pendant la lecture de la session : la mise en page apparaît avant les données. */
+/** Skeleton while the session is being read: the layout appears before the data. */
 export function PageSkeleton() {
   return (
     <div className="grid gap-3 p-4" aria-busy="true">

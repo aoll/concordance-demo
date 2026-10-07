@@ -8,6 +8,6 @@ onlyBuiltDependencies:
   - '@swc/core'
   - esbuild
 
-# Correctif de sécurité transitif (@nestjs/swagger → js-yaml, GHSA-r3ph-w7gj-g6xm).
+# Transitive security fix (@nestjs/swagger → js-yaml, GHSA-r3ph-w7gj-g6xm).
 overrides:
   'js-yaml@>=5.0.0 <5.4.1': '^5.4.1'

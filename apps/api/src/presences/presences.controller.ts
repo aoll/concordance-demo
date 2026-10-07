@@ -77,7 +77,7 @@ export class PresencesController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() _body: UpdatePresenceDto,
   ): Promise<PresenceDto> {
-    // Seul statut accepté par le contrat : ENDED.
+    // Only status accepted by the contract: ENDED.
     return this.presences.end(manager, id);
   }
 }

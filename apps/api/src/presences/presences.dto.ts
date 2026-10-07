@@ -6,20 +6,20 @@ export const PresenceSchema = z.object({
   managerId: z.uuid(),
   zoneId: z.uuid(),
   startedAt: z.iso.datetime(),
-  /** null tant que le shift est en cours. */
+  /** null while the shift is in progress. */
   endedAt: z.iso.datetime().nullable(),
 });
 
 export class PresenceDto extends createZodDto(PresenceSchema) {}
 
-/** S'inscrire sur une zone. Le manager vient du cookie de session, jamais du corps. */
+/** Sign up on a zone. The manager comes from the session cookie, never from the body. */
 export const CreatePresenceSchema = z.object({
   zoneId: z.uuid(),
 });
 
 export class CreatePresenceDto extends createZodDto(CreatePresenceSchema) {}
 
-/** Fin de shift : l'heure de fin est posée par le serveur. */
+/** End of shift: the end time is set by the server. */
 export const UpdatePresenceSchema = z.object({
   status: z.literal('ENDED'),
 });
@@ -29,7 +29,7 @@ export class UpdatePresenceDto extends createZodDto(UpdatePresenceSchema) {}
 export const ListPresencesQuerySchema = z.object({
   managerId: z.uuid().optional(),
   zoneId: z.uuid().optional(),
-  /** true : seulement les shifts en cours. */
+  /** true: only shifts in progress. */
   active: z.enum(['true', 'false']).optional(),
 });
 

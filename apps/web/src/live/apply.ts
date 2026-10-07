@@ -2,8 +2,8 @@ import type { ZoneOccupancy } from '@concordance/api-client';
 import type { ZoneOccupancyUpdated, ZoneSnapshot } from '@concordance/contracts';
 
 /**
- * Remplace une zone du cache de `GET /zones` par l'instantané reçu en temps réel.
- * L'événement porte l'occupation complète : l'appliquer deux fois ne change rien.
+ * Replaces a zone in the `GET /zones` cache with the snapshot received in real time.
+ * The event carries the full occupancy: applying it twice changes nothing.
  */
 export function withZoneSnapshot(
   zones: ZoneOccupancy[] | undefined,
@@ -18,7 +18,7 @@ export interface FeedEntry {
   text: string;
 }
 
-/** Ligne du fil d'activité, formulée comme dans la maquette. */
+/** Activity feed line, worded as in the mockup. */
 export function feedEntry(event: ZoneOccupancyUpdated, meId: string): FeedEntry {
   const who = event.change.manager.id === meId ? 'Vous' : event.change.manager.displayName;
   const what =

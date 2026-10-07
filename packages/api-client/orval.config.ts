@@ -1,6 +1,6 @@
 import { defineConfig } from 'orval';
 
-// Contrat écrit par l'API (apps/api/openapi.json) → hooks TanStack Query, schémas Zod.
+// Contract written by the API (apps/api/openapi.json) → TanStack Query hooks, Zod schemas.
 const input = '../../apps/api/openapi.json';
 
 export default defineConfig({
@@ -15,7 +15,7 @@ export default defineConfig({
       clean: true,
       override: {
         mutator: { path: 'src/fetcher.ts', name: 'customFetch' },
-        // Les hooks renvoient directement le corps ; les erreurs passent par ApiError.
+        // Hooks return the body directly; errors go through ApiError.
         fetch: { includeHttpResponseReturnType: false },
       },
     },

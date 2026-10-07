@@ -3,7 +3,7 @@ import { Client } from 'pg';
 import { migrateDatabase } from '../database/migrate';
 import * as schema from '../database/schema';
 
-/** Recrée la base de test et y joue les migrations, une fois par run. */
+/** Recreates the test database and runs the migrations on it, once per run. */
 export default async function setup(): Promise<void> {
   const { DEV_DATABASE_URL, TEST_DATABASE_URL } = process.env;
   if (!DEV_DATABASE_URL || !TEST_DATABASE_URL) throw new Error('Voir vitest.config.mts');

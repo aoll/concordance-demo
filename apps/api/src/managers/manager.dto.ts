@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 /**
- * Vue publique d'un manager. Le modèle en base porte aussi email, matricule et téléphone :
- * ils ne sortent jamais, car la sérialisation Zod retire tout champ non déclaré ici.
+ * Public view of a manager. The database model also carries email, employee ID and phone:
+ * they never leave, because Zod serialization strips any field not declared here.
  */
 export const ManagerSchema = z
   .object({

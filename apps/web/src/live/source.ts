@@ -8,7 +8,7 @@ interface LiveHandlers {
   onStatus: (status: LiveStatus, reconnected: boolean) => void;
 }
 
-/** Une seule socket par page, ouverte au premier abonnement et gardée ensuite (flux public). */
+/** A single socket per page, opened on the first subscription and kept afterwards (public stream). */
 let shared: Socket<ServerToClientEvents> | undefined;
 const sharedSocket = () => {
   shared ??= io({ transports: ['websocket'] });
@@ -16,16 +16,16 @@ const sharedSocket = () => {
 };
 
 /**
- * Source des événements temps réel : la gateway socket.io de l'API (même origine, proxifiée
- * par Vite en dev). Renvoie la fonction de désabonnement.
- * La socket survit aux désabonnements : le double montage de StrictMode ou un changement
- * d'écran ne coupent pas une connexion en cours d'établissement.
+ * Source of real-time events: the API's socket.io gateway (same origin, proxied
+ * by Vite in dev). Returns the unsubscribe function.
+ * The socket outlives unsubscriptions: StrictMode's double mount or a screen change
+ * does not cut a connection that is still being established.
  */
 export function subscribeLive({ onEvent, onStatus }: LiveHandlers): () => void {
   const socket = sharedSocket();
   const onConnect = () => onStatus('live', false);
   const onDown = () => onStatus('offline', false);
-  // Reconnexion après une coupure : des événements ont pu être manqués.
+  // Reconnection after a disconnection: events may have been missed.
   const onReconnect = () => onStatus('live', true);
   onStatus(socket.connected ? 'live' : 'connecting', false);
   socket.on('connect', onConnect);

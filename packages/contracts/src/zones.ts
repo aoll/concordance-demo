@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 /**
- * Tracé d'une zone sur le plan schématique (SVG, viewBox 800 × 600) et position de son étiquette.
- * Les zones sont définies en base : le front dessine ce que l'API renvoie, sans liste en dur.
+ * Outline of a zone on the schematic map (SVG, viewBox 800 × 600) and position of its label.
+ * Zones are defined in the database: the front end draws what the API returns, with no hard-coded list.
  */
 export const ZoneShapeSchema = z.object({
   path: z.string().min(1),

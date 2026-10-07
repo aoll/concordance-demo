@@ -7,20 +7,20 @@ coverage/
 .env
 .DS_Store
 
-# Artefacts générés (voir README : chaîne du contrat)
+# Generated artifacts (see README: contract chain)
 apps/api/openapi.json
 packages/api-client/src/generated/
 apps/web/src/routeTree.gen.ts
 
-# Fichiers temporaires du générateur de routes TanStack
+# Temporary files from the TanStack route generator
 apps/web/.tanstack/
 
-# Captures de preuve du lot 6 (scripts/pwa-offline.mjs)
+# Proof captures for lot 6 (scripts/pwa-offline.mjs)
 apps/web/pwa-proof/
 
-# Captures de preuve des lots 2 et 4 (scripts/front-flow.mjs)
+# Proof captures for lots 2 and 4 (scripts/front-flow.mjs)
 apps/web/front-proof/
 
-# Captures de preuve du lot 5 (scripts/live-two-browsers.mjs)
+# Proof captures for lot 5 (scripts/live-two-browsers.mjs)
 apps/web/live-proof/
 apps/web/deploy-proof/

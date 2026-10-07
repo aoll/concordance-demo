@@ -13,10 +13,10 @@ import { ZonesModule } from './zones/zones.module';
 @Module({
   imports: [ConfigModule, DatabaseModule, HealthModule, AuthModule, ZonesModule, PresencesModule],
   providers: [
-    // Entrées validées et sorties filtrées par les schémas Zod des DTO.
+    // Inputs validated and outputs filtered by the DTOs' Zod schemas.
     { provide: APP_PIPE, useClass: ZodValidationPipe },
     { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
-    // Erreurs métier → ErrorResponse { statusCode, code, message }.
+    // Business errors → ErrorResponse { statusCode, code, message }.
     { provide: APP_FILTER, useClass: BusinessErrorFilter },
   ],
 })

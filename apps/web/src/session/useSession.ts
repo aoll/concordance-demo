@@ -8,7 +8,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { API_CACHE, persistOptions } from '../pwa/persister';
 
-/** Session courante : un 401 n'est pas une erreur à réessayer, c'est « pas connecté ». */
+/** Current session: a 401 is not an error to retry, it means "not logged in". */
 export function useSession() {
   const session = useGetSession({ query: { retry: false, staleTime: Number.POSITIVE_INFINITY } });
   const manager: Manager | undefined = session.data?.manager;
@@ -28,11 +28,11 @@ export function useLogoutAndReset() {
   const queryClient = useQueryClient();
   return useLogout({
     mutation: {
-      // On repart d'un cache vide, y compris la copie hors ligne d'IndexedDB (sinon le manager
-      // suivant verrait les données du précédent) ; la session refetchée renvoie 401 → connexion.
+      // We start over from an empty cache, including the offline copy in IndexedDB (otherwise the next
+      // manager would see the previous one's data); the refetched session returns 401 → login.
       onSuccess: async () => {
         await persistOptions.persister.removeClient();
-        // Et les réponses d'API gardées par le service worker (shifts de ce manager).
+        // And the API responses kept by the service worker (this manager's shifts).
         if ('caches' in window) await caches.delete(API_CACHE);
         await queryClient.resetQueries();
       },

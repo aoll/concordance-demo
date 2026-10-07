@@ -20,8 +20,8 @@ import { FILL_KEYS, fillLabel } from '../zones/fill';
 import { ZoneList } from '../zones/ZoneList';
 import { ZonePanel } from '../zones/ZonePanel';
 
-// La zone sélectionnée vit dans l'URL (?zone=<id>, le même id que l'API) : partageable et
-// conservée au rechargement. Un id mal formé est ignoré ; un id inconnu retombe sur une zone par défaut.
+// The selected zone lives in the URL (?zone=<id>, the same id as the API): shareable and
+// preserved on reload. A malformed id is ignored; an unknown id falls back to a default zone.
 const SHIFT_ERROR = 'shift-error';
 
 export const Route = createFileRoute('/')({
@@ -31,7 +31,7 @@ export const Route = createFileRoute('/')({
 
 function MapPage() {
   const { manager } = useSession();
-  // La racine n'affiche cette page qu'une fois connecté.
+  // The root only renders this page once logged in.
   return manager ? <ZonesScreen me={manager} /> : null;
 }
 
@@ -43,7 +43,7 @@ function ZonesScreen({ me }: { me: Manager }) {
   const online = useOnline();
   const { zone: selectedId } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  // Bottom sheet du téléphone : repliée sur la liste et le détail court, dépliée sur tout le panneau.
+  // Phone bottom sheet: collapsed it shows the list and the short detail, expanded it shows the whole panel.
   const [sheetOpen, setSheetOpen] = useState(false);
   const { reset: resetJoin } = join;
   const { reset: resetEnd } = end;
@@ -57,7 +57,7 @@ function ZonesScreen({ me }: { me: Manager }) {
       ? errorMessage(end.error)
       : undefined;
 
-  // Erreurs des actions de shift (409 compris) : un toast qui se ferme seul ou au toucher.
+  // Shift action errors (409 included): a toast that closes on its own or on tap.
   useEffect(() => {
     if (!error) {
       toast.dismiss(SHIFT_ERROR);
@@ -72,7 +72,7 @@ function ZonesScreen({ me }: { me: Manager }) {
     });
   }, [error, dismissError]);
 
-  // Des données (même restaurées hors ligne) priment sur une erreur de refetch.
+  // Data (even restored offline) takes precedence over a refetch error.
   if (!zones.data) {
     return zones.isError ? (
       <Alert variant="destructive" className="m-4 w-auto">
@@ -85,8 +85,8 @@ function ZonesScreen({ me }: { me: Manager }) {
 
   const shiftZone = zones.data.find((zone) => zone.id === shift?.zoneId);
   const selected = zones.data.find((zone) => zone.id === selectedId) ?? shiftZone ?? zones.data[0];
-  // Une fin de shift sur une présence encore provisoire n'aurait pas d'id serveur.
-  // Hors ligne, les écritures échoueraient : les boutons d'inscription et de fin de shift sont coupés.
+  // Ending a shift on a still-provisional presence would have no server id.
+  // Offline, writes would fail: the join and end-shift buttons are disabled.
   const busy = !online || join.isPending || end.isPending || (shift ? isOptimistic(shift) : false);
   const select = (zone: string) => {
     dismissError();

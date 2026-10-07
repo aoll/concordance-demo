@@ -14,11 +14,11 @@ export const presences = pgTable(
       .notNull()
       .references(() => zones.id),
     startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
-    /** null tant que le shift est en cours. */
+    /** null while the shift is in progress. */
     endedAt: timestamp('ended_at', { withTimezone: true }),
   },
   (table) => [
-    // Règle 1, garantie par la base : au plus une présence active par manager.
+    // Rule 1, guaranteed by the database: at most one active presence per manager.
     uniqueIndex('presences_one_active_per_manager')
       .on(table.managerId)
       .where(sql`${table.endedAt} IS NULL`),

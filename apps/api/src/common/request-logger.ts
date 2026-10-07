@@ -2,9 +2,9 @@ import { Injectable, Logger, type NestMiddleware } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 
 /**
- * Une ligne par requête HTTP : méthode, route, statut, durée, et le code métier quand il y en a un
- * (posé par `BusinessErrorFilter`). Middleware plutôt qu'intercepteur : il voit aussi les requêtes
- * refusées par un guard ou par la validation. En production, on brancherait pino (nestjs-pino) ici.
+ * One line per HTTP request: method, route, status, duration, and the business code when there is one
+ * (set by `BusinessErrorFilter`). Middleware rather than interceptor: it also sees requests
+ * rejected by a guard or by validation. In production, pino (nestjs-pino) would be plugged in here.
  */
 @Injectable()
 export class RequestLogger implements NestMiddleware {

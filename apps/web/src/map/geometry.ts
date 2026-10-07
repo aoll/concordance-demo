@@ -1,11 +1,11 @@
 /**
- * Fond du plan schématique de l'Île-de-France repris de la maquette validée (viewBox 800 × 600) :
- * Seine, Marne, RER et gares, purement décoratifs. Les zones, elles, viennent de l'API
- * (tracé et étiquette en base, `zone.shape`).
+ * Background of the Île-de-France schematic map taken from the validated mockup (viewBox 800 × 600):
+ * Seine, Marne, RER and stations, purely decorative. The zones, on the other hand, come from the API
+ * (outline and label in the database, `zone.shape`).
  */
 type Point = readonly [number, number];
 
-/** Polyline aux angles arrondis, façon plan de transport. */
+/** Polyline with rounded corners, transit-map style. */
 export function rounded(points: readonly Point[], radius: number): string {
   const [first, ...rest] = points;
   if (!first) return '';
@@ -25,7 +25,7 @@ export function rounded(points: readonly Point[], radius: number): string {
   return `${d} L${last[0]},${last[1]}`;
 }
 
-/** Contour fermé lissé (Catmull-Rom) pour les zones. */
+/** Smoothed closed outline (Catmull-Rom) for the zones. */
 export function blob(points: readonly Point[]): string {
   const n = points.length;
   const at = (i: number) => points[(i + n) % n] as Point;
@@ -116,7 +116,7 @@ export const LINES: { color: string; d: string }[] = (
   ] satisfies [Rer, Point[]][]
 ).map(([line, points]) => ({ color: RER[line], d: rounded(points, 16) }));
 
-/** Pastilles de terminus (lettre de la ligne, sans nom de gare : carte épurée). */
+/** Terminus roundels (line letter, no station name: clean map). */
 export const TERMINI: { line: Rer; color: string; at: Point }[] = (
   [
     ['A', [110, 190]],
@@ -132,7 +132,7 @@ export const TERMINI: { line: Rer; color: string; at: Point }[] = (
   ] satisfies [Rer, Point][]
 ).map(([line, at]) => ({ line, color: RER[line], at }));
 
-/** Gares de correspondance, en capsules blanches (sans libellé). */
+/** Interchange stations, as white capsules (no label). */
 export const STATIONS: [Point, Point][] = [
   [
     [262, 256],

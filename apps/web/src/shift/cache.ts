@@ -1,8 +1,8 @@
 import type { Manager, Presence, ZoneOccupancy } from '@concordance/api-client';
 
 /**
- * Mises à jour du cache TanStack Query appliquées avant la réponse du serveur (optimisme).
- * Fonctions pures : la mutation les applique dans onMutate et restaure l'instantané sur erreur.
+ * TanStack Query cache updates applied before the server responds (optimistic).
+ * Pure functions: the mutation applies them in onMutate and restores the snapshot on error.
  */
 export function withJoined(
   zones: ZoneOccupancy[] | undefined,
@@ -32,7 +32,7 @@ export function withLeft(
   );
 }
 
-/** Présence provisoire affichée tant que le serveur n'a pas répondu (id remplacé au refetch). */
+/** Provisional presence shown until the server responds (id replaced on refetch). */
 export function optimisticPresence(managerId: string, zoneId: string, now = new Date()): Presence {
   return {
     id: `optimistic-${now.getTime()}`,

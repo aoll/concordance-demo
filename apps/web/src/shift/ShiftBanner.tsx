@@ -13,7 +13,7 @@ interface ShiftBannerProps {
   onEnd: () => void;
 }
 
-/** Bandeau « En shift sur … » toujours visible, avec la fin de shift. */
+/** Always-visible "En shift sur …" banner, with the end-shift action. */
 export function ShiftBanner({ shift, zone, busy, onEnd }: ShiftBannerProps) {
   return (
     <Alert

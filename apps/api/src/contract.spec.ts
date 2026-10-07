@@ -8,8 +8,8 @@ import { AppModule } from './app.module';
 import { configureApp } from './setup';
 
 /**
- * Contrat de la tâche C : les routes et les schémas que le front consomme via Orval.
- * Les lots suivants remplacent les stubs (501) sans changer ces signatures.
+ * Task C contract: the routes and schemas the front end consumes via Orval.
+ * Later lots replace the stubs (501) without changing these signatures.
  */
 describe('contrat API', () => {
   let app: INestApplication;
@@ -66,7 +66,7 @@ describe('contrat API', () => {
   });
 
   it('valide les entrées avant le contrôleur (400), sans toucher à la base', async () => {
-    // Les routes de présence sont derrière le guard : leur 400 est testé dans presences.spec.ts.
+    // Presence routes are behind the guard: their 400 is tested in presences.spec.ts.
     await request(app.getHttpServer())
       .post('/api/auth/login')
       .send({ displayName: 'x' })

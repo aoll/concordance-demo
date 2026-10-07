@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 import { OPENAPI_PATH, writeOpenApi } from './openapi';
 import { configureApp } from './setup';
 
-// `pnpm generate` : export du contrat sans démarrer le serveur ni toucher à la base.
+// `pnpm generate`: contract export without starting the server or touching the database.
 async function main() {
   const app = await NestFactory.create(AppModule, { logger: false });
   await writeOpenApi(configureApp(app));

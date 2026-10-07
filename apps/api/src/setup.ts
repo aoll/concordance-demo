@@ -6,11 +6,11 @@ import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 export const API_PREFIX = 'api';
 
-/** Réglages communs à l'appli servie, aux tests et à l'export du contrat. */
+/** Settings shared by the served app, the tests and the contract export. */
 export function configureApp(app: INestApplication): OpenAPIObject {
-  // /health reste hors préfixe : c'est une sonde d'infra, pas une route du contrat.
+  // /health stays outside the prefix: it is an infra probe, not a contract route.
   app.setGlobalPrefix(API_PREFIX, { exclude: ['health'] });
-  // En-têtes de sécurité par défaut (CSP same-origin, nosniff, HSTS, pas de X-Powered-By).
+  // Default security headers (same-origin CSP, nosniff, HSTS, no X-Powered-By).
   app.use(helmet());
   app.use(cookieParser());
   const config = new DocumentBuilder()
@@ -19,15 +19,15 @@ export function configureApp(app: INestApplication): OpenAPIObject {
     .setVersion('0.1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config, {
-    // operationId = nom de la méthode : Orval en tire useListZones, useCreatePresence…
+    // operationId = method name: Orval derives useListZones, useCreatePresence… from it
     operationIdFactory: (_controllerKey, methodKey) => methodKey,
   });
   return renameSchemas(cleanupOpenApiDoc(document));
 }
 
 /**
- * `ZoneOccupancyDto_Output` → `ZoneOccupancy` : les noms du contrat deviennent les noms des
- * types côté front. Les suffixes ne servent qu'à Nest (classe DTO, schéma de sortie).
+ * `ZoneOccupancyDto_Output` → `ZoneOccupancy`: contract names become the names of the
+ * front-end types. The suffixes only serve Nest (DTO class, output schema).
  */
 function renameSchemas(document: OpenAPIObject): OpenAPIObject {
   const schemas = document.components?.schemas ?? {};

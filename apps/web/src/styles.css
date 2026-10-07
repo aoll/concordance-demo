@@ -1,6 +1,6 @@
-/* Repris de la maquette validée. Téléphone : carte et bottom sheet ; tablette (≥ 720 px) : côte à côte.
-   Composants : shadcn/ui (src/components/ui) sur Tailwind v4, aux couleurs de la maquette.
-   Ce fichier ne garde que les jetons, la mise en page et la carte SVG. */
+/* Taken from the approved mockup. Phone: map and bottom sheet; tablet (≥ 720 px): side by side.
+   Components: shadcn/ui (src/components/ui) on Tailwind v4, in the mockup's colors.
+   This file only keeps the tokens, the layout and the SVG map. */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@fontsource/barlow-semi-condensed/600.css";
@@ -53,7 +53,7 @@
   }
 }
 
-/* Jetons shadcn/ui branchés sur la palette de la maquette (clair et sombre suivent :root). */
+/* shadcn/ui tokens wired to the mockup palette (light and dark follow :root). */
 @theme inline {
   --color-background: var(--surface);
   --color-foreground: var(--ink);
@@ -121,7 +121,7 @@
   min-width: 0;
 }
 
-/* Téléphone : la carte occupe l'écran, le panneau est une bottom sheet qui liste les zones. */
+/* Phone: the map fills the screen, the panel is a bottom sheet listing the zones. */
 @media (max-width: 719.98px) {
   .app {
     padding-bottom: 46dvh;
@@ -143,7 +143,7 @@
   .panel.open {
     max-height: 88dvh;
   }
-  /* La sheet défile : ses blocs gardent leur hauteur au lieu de rétrécir. */
+  /* The sheet scrolls: its blocks keep their height instead of shrinking. */
   .panel > * {
     flex-shrink: 0;
   }
@@ -152,13 +152,13 @@
   .app {
     grid-template-columns: minmax(0, 1fr) 320px;
   }
-  /* Tablette : carte et panneau côte à côte (la poignée et la liste se masquent en min-[720px]:hidden). */
+  /* Tablet: map and panel side by side (the handle and the list hide via min-[720px]:hidden). */
   .panel {
     border-left: 1px solid var(--line);
   }
 }
 
-/* Carte */
+/* Map */
 .map {
   width: 100%;
   height: auto;
@@ -280,7 +280,7 @@
 }
 
 .zl {
-  /* Les clics traversent l'étiquette jusqu'à la zone en dessous. */
+  /* Clicks pass through the label to the zone underneath. */
   pointer-events: none;
 }
 .zl .name {
@@ -305,7 +305,7 @@
   fill: var(--ink);
 }
 
-/* Temps réel : pastille d'état et flash sur la zone qui change. */
+/* Real time: status badge and flash on the zone that changes. */
 .live-live .live-dot {
   animation: pulse 2s infinite;
 }
