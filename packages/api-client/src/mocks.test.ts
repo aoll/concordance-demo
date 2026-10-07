@@ -1,3 +1,4 @@
+import { type ZoneOccupancyUpdated, ZoneOccupancyUpdatedSchema } from '@concordance/contracts';
 import { setupServer } from 'msw/node';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createMockApi } from './mocks';
@@ -66,5 +67,17 @@ describe('createMockApi', () => {
     });
     expect(ended.status).toBe(200);
     expect((await ended.json()).endedAt).not.toBeNull();
+  });
+
+  it('émet zone.occupancy.updated comme la gateway (occupy puis release)', () => {
+    const events: ZoneOccupancyUpdated[] = [];
+    const live = createMockApi({ onEvent: (event) => events.push(event) });
+    events.length = 0; // ignore le seed
+    live.occupy('orly', 'Kenza A.');
+    live.release('orly', 'Kenza A.');
+    expect(events.map((event) => ZoneOccupancyUpdatedSchema.parse(event))).toMatchObject([
+      { zone: { slug: 'orly', occupied: 1 }, change: { kind: 'joined' } },
+      { zone: { slug: 'orly', occupied: 0 }, change: { kind: 'left' } },
+    ]);
   });
 });

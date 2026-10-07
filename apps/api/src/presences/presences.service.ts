@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { and, desc, eq, isNotNull, isNull, type SQL, sql } from 'drizzle-orm';
 import {
   AlreadyPresentError,
@@ -9,13 +9,21 @@ import {
 } from '../common/errors';
 import { type Database, DB, one } from '../database/database.module';
 import { type ManagerRow, type PresenceRow, presences, zones } from '../database/schema';
+import { ZonesService } from '../zones/zones.service';
+import { PresenceGateway } from './presence.gateway';
 import type { ListPresencesQueryDto, PresenceDto } from './presences.dto';
 
 const ONE_ACTIVE_PER_MANAGER = 'presences_one_active_per_manager';
 
 @Injectable()
 export class PresencesService {
-  constructor(@Inject(DB) private readonly db: Database) {}
+  private readonly logger = new Logger(PresencesService.name);
+
+  constructor(
+    @Inject(DB) private readonly db: Database,
+    private readonly zones: ZonesService,
+    private readonly gateway: PresenceGateway,
+  ) {}
 
   async list(query: ListPresencesQueryDto): Promise<PresenceDto[]> {
     const filters: SQL[] = [];
@@ -61,6 +69,7 @@ export class PresencesService {
           await tx.insert(presences).values({ managerId: manager.id, zoneId: zone.id }).returning(),
         );
       });
+      await this.announce('joined', manager, row.zoneId);
       return toPresence(row);
     } catch (error) {
       if (isUniqueViolation(error, ONE_ACTIVE_PER_MANAGER)) throw new AlreadyPresentError();
@@ -82,7 +91,25 @@ export class PresencesService {
       .where(and(eq(presences.id, id), isNull(presences.endedAt)))
       .returning();
     if (!ended) throw new PresenceAlreadyEndedError();
+    await this.announce('left', manager, ended.zoneId);
     return toPresence(ended);
+  }
+
+  /**
+   * Diffusion après commit : l'occupation est relue en base, les autres clients ne voient donc
+   * jamais un état qui n'a pas été validé. Un échec de diffusion ne fait pas échouer la requête :
+   * le changement est enregistré, les clients se resynchronisent au prochain chargement.
+   */
+  private async announce(kind: 'joined' | 'left', manager: ManagerRow, zoneId: string) {
+    try {
+      this.gateway.broadcast({
+        zone: await this.zones.get(zoneId),
+        change: { kind, manager: { id: manager.id, displayName: manager.displayName } },
+        at: new Date().toISOString(),
+      });
+    } catch (error) {
+      this.logger.error(`Diffusion impossible pour la zone ${zoneId}`, error);
+    }
   }
 }
 
