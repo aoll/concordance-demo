@@ -81,13 +81,13 @@ async function open(name, device, pseudo) {
   await page.goto(APP);
   await page.getByLabel('Pseudo').fill(pseudo);
   await page.getByRole('button', { name: 'Entrer' }).click();
-  await page.getByTestId('count-orly').waitFor();
+  await page.getByTestId('count-Orly').waitFor();
   await page.getByTestId('live-status').and(page.locator('[data-status="live"]')).waitFor();
   return {
     name,
     page,
     panel: page.locator('aside.panel'),
-    count: (slug) => page.getByTestId(`count-${slug}`),
+    count: (zone) => page.getByTestId(`count-${zone}`),
     zone: (label) => page.getByRole('button', { name: new RegExp(`^${label},`) }),
     zoneFetches,
     sockets: () => sockets,
@@ -126,8 +126,8 @@ try {
   check('deux navigateurs connectés en WebSocket (pastille « en direct »)', true);
   check(
     'état initial lu sur la vraie API : La Défense 3/3, Orly 0/3',
-    (await alex.count('la-defense').textContent()) === '3/3' &&
-      (await kenza.count('orly').textContent()) === '0/3',
+    (await alex.count('La Défense').textContent()) === '3/3' &&
+      (await kenza.count('Orly').textContent()) === '0/3',
   );
   await alex.zone('Orly').click();
   await sideBySide('1-depart', alex, kenza);
@@ -136,7 +136,7 @@ try {
   const noRefetch1 = await withoutRefetch(alex, async () => {
     await kenza.zone('Orly').click();
     await kenza.panel.getByRole('button', { name: "Je m'inscris ici" }).click();
-    await alex.count('orly').getByText('1/3').waitFor({ timeout: 3000 });
+    await alex.count('Orly').getByText('1/3').waitFor({ timeout: 3000 });
   });
   check('inscription de Kenza visible chez Alex sans recharger : Orly 1/3', true);
   check('… sans refetch de GET /api/zones chez Alex (setQueryData)', noRefetch1);
@@ -148,12 +148,15 @@ try {
     "… fil d'activité d'Alex : « Kenza A. a rejoint Orly »",
     await alex.panel.getByText('Kenza A. a rejoint Orly').isVisible(),
   );
-  check('… flash sur la zone Orly', (await alex.page.locator('#orly.flash').count()) === 1);
+  check(
+    '… flash sur la zone Orly',
+    await alex.zone('Orly').evaluate((g) => g.classList.contains('flash')),
+  );
   await sideBySide('2-kenza-inscrite', alex, kenza);
 
   // Alex rejoint Orly à son tour : le téléphone de Kenza suit.
   await alex.panel.getByRole('button', { name: "Je m'inscris ici" }).click();
-  await kenza.count('orly').getByText('2/3').waitFor({ timeout: 3000 });
+  await kenza.count('Orly').getByText('2/3').waitFor({ timeout: 3000 });
   check(
     "inscription d'Alex visible chez Kenza : Orly 2/3, « Alex L. a rejoint Orly »",
     await kenza.panel.getByText('Alex L. a rejoint Orly').isVisible(),
@@ -163,7 +166,7 @@ try {
   // Kenza termine son shift : Orly redescend chez Alex.
   const noRefetch2 = await withoutRefetch(alex, async () => {
     await kenza.page.locator('.shift').getByRole('button', { name: 'Terminer mon shift' }).click();
-    await alex.count('orly').getByText('1/3').waitFor({ timeout: 3000 });
+    await alex.count('Orly').getByText('1/3').waitFor({ timeout: 3000 });
   });
   check('fin de shift de Kenza visible chez Alex : Orly 1/3, sans refetch', noRefetch2);
   check(
@@ -173,12 +176,12 @@ try {
   await sideBySide('4-fin-de-shift', alex, kenza);
 
   // Le cache nourri par les événements doit correspondre à ce que renvoie l'API au rechargement.
-  const live = await kenza.count('orly').textContent();
+  const live = await kenza.count('Orly').textContent();
   await kenza.page.reload();
-  await kenza.count('orly').waitFor();
+  await kenza.count('Orly').waitFor();
   check(
     `après rechargement, Kenza voit le même état que le direct (Orly ${live})`,
-    (await kenza.count('orly').textContent()) === live,
+    (await kenza.count('Orly').textContent()) === live,
   );
   check('une seule connexion socket.io pour toute la session d’Alex', alex.sockets() === 1);
   const consoleErrors = [...alex.errors, ...kenza.errors];

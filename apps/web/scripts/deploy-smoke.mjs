@@ -23,9 +23,9 @@ async function open(name, device, pseudo) {
   await page.goto(APP);
   await page.getByLabel('Pseudo').fill(pseudo);
   await page.getByRole('button', { name: 'Entrer' }).click();
-  await page.getByTestId('count-orly').waitFor();
+  await page.getByTestId('count-Orly').waitFor();
   await page.getByTestId('live-status').and(page.locator('[data-status="live"]')).waitFor();
-  return { name, page, count: (slug) => page.getByTestId(`count-${slug}`), context };
+  return { name, page, count: (zone) => page.getByTestId(`count-${zone}`), context };
 }
 
 try {
@@ -34,11 +34,11 @@ try {
   const phone = await open('telephone', devices['Pixel 7'], `Test P${run}`);
   check(`${APP} : connexion par pseudo et socket « en direct » sur les deux appareils`, true);
 
-  const before = Number((await tablet.count('orly').textContent()).split('/')[0]);
+  const before = Number((await tablet.count('Orly').textContent()).split('/')[0]);
   await phone.page.getByRole('button', { name: /^Orly,/ }).click();
   await phone.page.getByRole('button', { name: "Je m'inscris ici" }).click();
   await tablet
-    .count('orly')
+    .count('Orly')
     .getByText(`${before + 1}/3`)
     .waitFor({ timeout: 5000 });
   check(`inscription du téléphone vue en direct sur la tablette (Orly ${before + 1}/3)`, true);
@@ -47,7 +47,7 @@ try {
     phone.page.screenshot({ path: `${PROOF_DIR}/telephone.png` }),
   ]);
   await phone.page.locator('.shift').getByRole('button', { name: 'Terminer mon shift' }).click();
-  await tablet.count('orly').getByText(`${before}/3`).waitFor({ timeout: 5000 });
+  await tablet.count('Orly').getByText(`${before}/3`).waitFor({ timeout: 5000 });
   check(`fin de shift vue en direct (Orly ${before}/3)`, true);
 
   const sw = await phone.page.evaluate(async () => {
@@ -57,7 +57,7 @@ try {
   check(`service worker de la PWA actif (${sw})`, sw === 'activated');
   await phone.context.setOffline(true);
   await phone.page.reload();
-  await phone.page.getByTestId('count-orly').waitFor();
+  await phone.page.getByTestId('count-Orly').waitFor();
   check('hors ligne, la carte se recharge depuis le cache', true);
 } finally {
   await browser.close();

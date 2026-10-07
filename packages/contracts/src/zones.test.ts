@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { ZONE_SLUGS, ZONES, ZoneSlugSchema } from './zones';
+import { ZoneShapeSchema } from './zones';
 
-describe('ZONES', () => {
-  it('a des slugs uniques', () => {
-    expect(new Set(ZONE_SLUGS).size).toBe(ZONES.length);
+describe('ZoneShapeSchema', () => {
+  it('accepte un tracé et la position de son étiquette', () => {
+    const shape = { path: 'M0,0 L10,0 L10,10 Z', label: { x: 5, y: 5 } };
+    expect(ZoneShapeSchema.parse(shape)).toEqual(shape);
   });
 
-  it('valide un slug connu et rejette les autres', () => {
-    expect(ZoneSlugSchema.parse('orly')).toBe('orly');
-    expect(ZoneSlugSchema.safeParse('lyon').success).toBe(false);
+  it('rejette un tracé vide ou une étiquette incomplète', () => {
+    expect(ZoneShapeSchema.safeParse({ path: '', label: { x: 0, y: 0 } }).success).toBe(false);
+    expect(ZoneShapeSchema.safeParse({ path: 'M0,0 Z', label: { x: 0 } }).success).toBe(false);
   });
 });

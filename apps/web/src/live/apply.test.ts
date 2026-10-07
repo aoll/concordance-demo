@@ -4,9 +4,10 @@ import { describe, expect, it } from 'vitest';
 import { feedEntry, withZoneSnapshot } from './apply';
 
 const kenza = { id: 'm-kenza', displayName: 'Kenza A.' };
+const shape = { path: 'M0,0 L10,0 L10,10 Z', label: { x: 5, y: 5 } };
 const zones: ZoneOccupancy[] = [
-  { id: 'z-orly', slug: 'orly', name: 'Orly', capacity: 3, occupied: 0, managers: [] },
-  { id: 'z-sd', slug: 'saint-denis', name: 'Saint-Denis', capacity: 4, occupied: 0, managers: [] },
+  { id: 'z-orly', name: 'Orly', capacity: 3, shape, occupied: 0, managers: [] },
+  { id: 'z-sd', name: 'Saint-Denis', capacity: 4, shape, occupied: 0, managers: [] },
 ];
 const joined: ZoneOccupancyUpdated = {
   zone: { ...zones[0], occupied: 1, managers: [kenza] } as ZoneOccupancyUpdated['zone'],

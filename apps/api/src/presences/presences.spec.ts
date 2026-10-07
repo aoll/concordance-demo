@@ -3,11 +3,11 @@ import { createTestApp, login, resetDatabase, type TestApp } from '../test/test-
 
 describe('présences (lot 3b)', () => {
   let t: TestApp;
-  let zoneBySlug: Map<string, { id: string; capacity: number }>;
+  let zoneByName: Map<string, { id: string; capacity: number }>;
 
-  const zoneId = (slug: string) => {
-    const zone = zoneBySlug.get(slug);
-    if (!zone) throw new Error(slug);
+  const zoneId = (name: string) => {
+    const zone = zoneByName.get(name);
+    if (!zone) throw new Error(name);
     return zone.id;
   };
 
@@ -19,10 +19,10 @@ describe('présences (lot 3b)', () => {
     await resetDatabase(t.db);
     const zones = (await t.http().get('/api/zones')).body as Array<{
       id: string;
-      slug: string;
+      name: string;
       capacity: number;
     }>;
-    zoneBySlug = new Map(zones.map((zone) => [zone.slug, zone]));
+    zoneByName = new Map(zones.map((zone) => [zone.name, zone]));
   });
 
   afterAll(() => t.app.close());
@@ -32,7 +32,7 @@ describe('présences (lot 3b)', () => {
     await t
       .http()
       .post('/api/presences')
-      .send({ zoneId: zoneId('orly') })
+      .send({ zoneId: zoneId('Orly') })
       .expect(401);
   });
 
@@ -53,19 +53,19 @@ describe('présences (lot 3b)', () => {
       .http()
       .post('/api/presences')
       .set('Cookie', cookie)
-      .send({ zoneId: zoneId('orly') })
+      .send({ zoneId: zoneId('Orly') })
       .expect(201);
     expect(created.body).toEqual({
       id: expect.any(String),
       managerId: manager.id,
-      zoneId: zoneId('orly'),
+      zoneId: zoneId('Orly'),
       startedAt: expect.any(String),
       endedAt: null,
     });
 
     const orly = await t
       .http()
-      .get(`/api/zones/${zoneId('orly')}`)
+      .get(`/api/zones/${zoneId('Orly')}`)
       .expect(200);
     expect(orly.body).toMatchObject({ occupied: 1, managers: [manager] });
 
@@ -73,7 +73,7 @@ describe('présences (lot 3b)', () => {
       .http()
       .post('/api/presences')
       .set('Cookie', cookie)
-      .send({ zoneId: zoneId('saint-denis') })
+      .send({ zoneId: zoneId('Saint-Denis') })
       .expect(409);
     expect(again.body).toMatchObject({ statusCode: 409, code: 'ALREADY_PRESENT' });
   });
@@ -85,7 +85,7 @@ describe('présences (lot 3b)', () => {
         .http()
         .post('/api/presences')
         .set('Cookie', cookie)
-        .send({ zoneId: zoneId('orly') })
+        .send({ zoneId: zoneId('Orly') })
         .expect(201);
     }
     const { cookie } = await login(t.http, 'A4');
@@ -93,7 +93,7 @@ describe('présences (lot 3b)', () => {
       .http()
       .post('/api/presences')
       .set('Cookie', cookie)
-      .send({ zoneId: zoneId('orly') })
+      .send({ zoneId: zoneId('Orly') })
       .expect(409);
     expect(full.body).toMatchObject({ code: 'ZONE_FULL' });
   });
@@ -116,7 +116,7 @@ describe('présences (lot 3b)', () => {
       .http()
       .post('/api/presences')
       .set('Cookie', alex.cookie)
-      .send({ zoneId: zoneId('orly') })
+      .send({ zoneId: zoneId('Orly') })
       .expect(201);
     const end = (cookie: string) =>
       t
@@ -143,36 +143,36 @@ describe('présences (lot 3b)', () => {
     // La place est libérée et le manager peut repartir en shift.
     const orly = await t
       .http()
-      .get(`/api/zones/${zoneId('orly')}`)
+      .get(`/api/zones/${zoneId('Orly')}`)
       .expect(200);
     expect(orly.body.occupied).toBe(0);
     await t
       .http()
       .post('/api/presences')
       .set('Cookie', alex.cookie)
-      .send({ zoneId: zoneId('orly') })
+      .send({ zoneId: zoneId('Orly') })
       .expect(201);
   });
 
   it('GET /api/presences filtre par manager, zone et état', async () => {
     const alex = await login(t.http, 'Alex');
     const sam = await login(t.http, 'Sam');
-    const join = (cookie: string, slug: string) =>
+    const join = (cookie: string, zoneName: string) =>
       t
         .http()
         .post('/api/presences')
         .set('Cookie', cookie)
-        .send({ zoneId: zoneId(slug) })
+        .send({ zoneId: zoneId(zoneName) })
         .expect(201);
-    const { body: first } = await join(alex.cookie, 'orly');
+    const { body: first } = await join(alex.cookie, 'Orly');
     await t
       .http()
       .patch(`/api/presences/${first.id}`)
       .set('Cookie', alex.cookie)
       .send({ status: 'ENDED' })
       .expect(200);
-    const { body: current } = await join(alex.cookie, 'saint-denis');
-    const { body: samShift } = await join(sam.cookie, 'saint-denis');
+    const { body: current } = await join(alex.cookie, 'Saint-Denis');
+    const { body: samShift } = await join(sam.cookie, 'Saint-Denis');
 
     const list = async (query: Record<string, string>) =>
       (
@@ -181,7 +181,7 @@ describe('présences (lot 3b)', () => {
 
     expect(await list({ managerId: alex.manager.id, active: 'true' })).toEqual([current.id]);
     expect(await list({ managerId: alex.manager.id, active: 'false' })).toEqual([first.id]);
-    expect((await list({ zoneId: zoneId('saint-denis'), active: 'true' })).sort()).toEqual(
+    expect((await list({ zoneId: zoneId('Saint-Denis'), active: 'true' })).sort()).toEqual(
       [current.id, samShift.id].sort(),
     );
     expect(await list({})).toHaveLength(3);

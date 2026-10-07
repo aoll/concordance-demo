@@ -1,5 +1,4 @@
 import { type Manager, useListZones } from '@concordance/api-client';
-import { type ZoneSlug, ZoneSlugSchema } from '@concordance/contracts';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback, useState } from 'react';
 import { z } from 'zod';
@@ -19,9 +18,10 @@ import { FILL_KEYS, fillLabel } from '../zones/fill';
 import { ZoneList } from '../zones/ZoneList';
 import { ZonePanel } from '../zones/ZonePanel';
 
-// La zone sélectionnée vit dans l'URL (?zone=la-defense) : partageable et conservée au rechargement.
+// La zone sélectionnée vit dans l'URL (?zone=<id>, le même id que l'API) : partageable et
+// conservée au rechargement. Un id mal formé est ignoré ; un id inconnu retombe sur une zone par défaut.
 export const Route = createFileRoute('/')({
-  validateSearch: z.object({ zone: ZoneSlugSchema.optional().catch(undefined) }),
+  validateSearch: z.object({ zone: z.uuid().optional().catch(undefined) }),
   component: MapPage,
 });
 
@@ -37,7 +37,7 @@ function ZonesScreen({ me }: { me: Manager }) {
   const { join, end } = useShiftMutations(me);
   const live = useLiveZones(me);
   const online = useOnline();
-  const { zone: selectedSlug } = Route.useSearch();
+  const { zone: selectedId } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   // Bottom sheet du téléphone : repliée sur la liste et le détail court, dépliée sur tout le panneau.
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -60,8 +60,7 @@ function ZonesScreen({ me }: { me: Manager }) {
   }
 
   const shiftZone = zones.data.find((zone) => zone.id === shift?.zoneId);
-  const selected =
-    zones.data.find((zone) => zone.slug === selectedSlug) ?? shiftZone ?? zones.data[0];
+  const selected = zones.data.find((zone) => zone.id === selectedId) ?? shiftZone ?? zones.data[0];
   // Une fin de shift sur une présence encore provisoire n'aurait pas d'id serveur.
   // Hors ligne, les écritures échoueraient : les boutons d'inscription et de fin de shift sont coupés.
   const busy = !online || join.isPending || end.isPending || (shift ? isOptimistic(shift) : false);
@@ -71,7 +70,7 @@ function ZonesScreen({ me }: { me: Manager }) {
       ? errorMessage(end.error)
       : undefined;
 
-  const select = (zone: ZoneSlug) => {
+  const select = (zone: string) => {
     dismissError();
     void navigate({ search: { zone }, replace: true });
   };
@@ -87,7 +86,7 @@ function ZonesScreen({ me }: { me: Manager }) {
         <div className="mapbox">
           <ZoneMap
             zones={zones.data}
-            selected={selected?.slug}
+            selected={selected?.id}
             flashing={live.flashing}
             onSelect={select}
           />
@@ -111,7 +110,7 @@ function ZonesScreen({ me }: { me: Manager }) {
             offline={!online}
             sheetOpen={sheetOpen}
             onToggleSheet={() => setSheetOpen((open) => !open)}
-            list={<ZoneList zones={zones.data} selected={selected.slug} onSelect={select} />}
+            list={<ZoneList zones={zones.data} selected={selected.id} onSelect={select} />}
             onJoin={() => join.mutate({ data: { zoneId: selected.id } })}
             onEnd={endShift}
           >

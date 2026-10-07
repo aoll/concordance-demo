@@ -1,21 +1,12 @@
 import { z } from 'zod';
 
 /**
- * Les 6 zones de la démo. Le slug est l'id du <path> dans la carte SVG du front
- * et la clé de la zone en base : c'est le seul lien entre la carte et les données.
- * Source unique pour le seed (lot 1) et la carte (lot 2c).
+ * Tracé d'une zone sur le plan schématique (SVG, viewBox 800 × 600) et position de son étiquette.
+ * Les zones sont définies en base : le front dessine ce que l'API renvoie, sans liste en dur.
  */
-export const ZONES = [
-  { slug: 'paris-rive-droite', name: 'Paris rive droite', capacity: 6 },
-  { slug: 'paris-rive-gauche', name: 'Paris rive gauche', capacity: 6 },
-  { slug: 'la-defense', name: 'La Défense', capacity: 3 },
-  { slug: 'saint-denis', name: 'Saint-Denis', capacity: 4 },
-  { slug: 'marne-la-vallee', name: 'Marne-la-Vallée', capacity: 4 },
-  { slug: 'orly', name: 'Orly', capacity: 3 },
-] as const;
+export const ZoneShapeSchema = z.object({
+  path: z.string().min(1),
+  label: z.object({ x: z.number(), y: z.number() }),
+});
 
-export const ZONE_SLUGS = ZONES.map((zone) => zone.slug) as [ZoneSlug, ...ZoneSlug[]];
-
-export type ZoneSlug = (typeof ZONES)[number]['slug'];
-
-export const ZoneSlugSchema = z.enum(ZONE_SLUGS);
+export type ZoneShape = z.infer<typeof ZoneShapeSchema>;
