@@ -16,13 +16,13 @@ const joined: ZoneOccupancyUpdated = {
 };
 
 describe('withZoneSnapshot', () => {
-  it('remplace la zone concernée sans toucher aux autres', () => {
+  it('replaces the targeted zone without touching the others', () => {
     const next = withZoneSnapshot(zones, joined.zone);
     expect(next?.[0]).toEqual(joined.zone);
     expect(next?.[1]).toBe(zones[1]);
   });
 
-  it('est idempotent et ignore un cache vide', () => {
+  it('is idempotent and ignores an empty cache', () => {
     const once = withZoneSnapshot(zones, joined.zone);
     expect(withZoneSnapshot(once, joined.zone)).toEqual(once);
     expect(withZoneSnapshot(undefined, joined.zone)).toBeUndefined();
@@ -30,7 +30,7 @@ describe('withZoneSnapshot', () => {
 });
 
 describe('feedEntry', () => {
-  it("raconte l'arrivée d'un autre manager et ma propre fin de shift", () => {
+  it('describes another manager arriving and my own end of shift', () => {
     expect(feedEntry(joined, 'm-alex').text).toBe('Kenza A. a rejoint Orly');
     const left = { ...joined, change: { kind: 'left' as const, manager: kenza } };
     expect(feedEntry(left, 'm-kenza').text).toBe('Vous avez terminé votre shift sur Orly');

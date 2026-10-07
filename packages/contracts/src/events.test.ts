@@ -16,11 +16,11 @@ const event = {
 };
 
 describe('ZoneOccupancyUpdatedSchema', () => {
-  it('accepte un événement valide', () => {
+  it('accepts a valid event', () => {
     expect(ZoneOccupancyUpdatedSchema.parse(event)).toEqual(event);
   });
 
-  it('rejette une zone sans tracé ou un changement inconnu', () => {
+  it('rejects a zone without a shape or an unknown change', () => {
     const { shape: _shape, ...withoutShape } = event.zone;
     const shapeless = { ...event, zone: withoutShape };
     const moved = { ...event, change: { ...event.change, kind: 'moved' } };

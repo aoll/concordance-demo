@@ -16,15 +16,15 @@ const zones: ZoneOccupancy[] = [
   { id: 'z2', name: 'La Défense', capacity: 3, shape, occupied: 0, managers: [] },
 ];
 
-describe('mises à jour optimistes du cache', () => {
-  it("ajoute le manager à la zone rejointe, sans toucher l'instantané", () => {
+describe('optimistic cache updates', () => {
+  it('adds the manager to the joined zone without mutating the snapshot', () => {
     const next = withJoined(zones, 'z1', me);
     expect(next?.[0]).toMatchObject({ occupied: 2, managers: [{ id: 'm1' }, { id: 'me' }] });
     expect(next?.[1]).toBe(zones[1]);
     expect(zones[0]?.occupied).toBe(1);
   });
 
-  it('retire le manager de sa zone en fin de shift', () => {
+  it('removes the manager from their zone at end of shift', () => {
     const joined = withJoined(zones, 'z1', me);
     expect(withLeft(joined, 'z1', 'me')?.[0]).toMatchObject({
       occupied: 1,
@@ -32,15 +32,15 @@ describe('mises à jour optimistes du cache', () => {
     });
   });
 
-  it("ne décompte pas une zone où le manager n'est pas", () => {
+  it("doesn't decrement a zone the manager isn't in", () => {
     expect(withLeft(zones, 'z2', 'me')?.[1]?.occupied).toBe(0);
   });
 
-  it('laisse un cache vide tel quel', () => {
+  it('leaves an empty cache unchanged', () => {
     expect(withJoined(undefined, 'z1', me)).toBeUndefined();
   });
 
-  it('marque la présence provisoire', () => {
+  it('marks the presence as provisional', () => {
     const presence = optimisticPresence('me', 'z1', new Date('2026-10-07T08:00:00Z'));
     expect(presence).toMatchObject({ zoneId: 'z1', endedAt: null });
     expect(isOptimistic(presence)).toBe(true);
