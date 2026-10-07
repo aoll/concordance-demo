@@ -1,6 +1,6 @@
 import { defineConfig } from 'tsup';
 
-// Double sortie : ESM pour Vite (apps/web), CommonJS pour Nest (apps/api).
+// Dual output: ESM for Vite (apps/web), CommonJS for Nest (apps/api).
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['esm', 'cjs'],

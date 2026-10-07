@@ -1,6 +1,6 @@
-// Vérification d'un déploiement (Railway ou image Docker locale) : deux appareils, une URL.
+// Deployment check (Railway or local Docker image): two devices, one URL.
 // APP_URL=https://… pnpm --filter @concordance/web proof:deploy
-// Crée deux managers de test et laisse leurs shifts terminés.
+// Creates two test managers and leaves their shifts ended.
 import { mkdir } from 'node:fs/promises';
 import { chromium, devices } from 'playwright-core';
 

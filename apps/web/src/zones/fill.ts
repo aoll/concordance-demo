@@ -13,9 +13,9 @@ const LABELS: Record<FillKey, string> = {
   full: 'Complète',
 };
 
-/** Couleur d'une zone selon son remplissage : libre, presque pleine (≥ 2/3), complète. */
+/** Color of a zone based on its fill level: free, almost full (≥ 2/3), full. */
 export function fillOf(zone: Pick<ZoneOccupancy, 'occupied' | 'capacity'>): Fill {
-  // En entiers : 2/3 vaut 0,666… et raterait un seuil écrit 0.67.
+  // In integers: 2/3 is 0.666… and would miss a threshold written as 0.67.
   const { occupied, capacity } = zone;
   const key: FillKey =
     occupied >= capacity ? 'full' : occupied * 3 >= capacity * 2 ? 'busy' : 'free';

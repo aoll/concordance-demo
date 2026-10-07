@@ -3,17 +3,17 @@ import { QueryClient } from '@tanstack/react-query';
 import type { PersistQueryClientOptions } from '@tanstack/react-query-persist-client';
 import { del, get, set } from 'idb-keyval';
 
-/** Durée pendant laquelle la dernière occupation connue reste affichable hors ligne. */
+/** How long the last known occupancy stays displayable offline. */
 const MAX_AGE = 1000 * 60 * 60 * 24;
 
 export function createQueryClient() {
   return new QueryClient({
-    // gcTime doit couvrir maxAge, sinon les requêtes restaurées seraient aussitôt jetées.
+    // gcTime must cover maxAge, otherwise restored queries would be discarded right away.
     defaultOptions: { queries: { gcTime: MAX_AGE } },
   });
 }
 
-/** Cache TanStack Query sérialisé dans IndexedDB : l'app rouvre hors ligne avec les dernières données. */
+/** TanStack Query cache serialized into IndexedDB: the app reopens offline with the latest data. */
 export const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
   persister: createAsyncStoragePersister({
     storage: {
@@ -26,5 +26,5 @@ export const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
   maxAge: MAX_AGE,
 };
 
-/** Cache Workbox des réponses GET /api (network-first), nommé dans vite.config.ts. */
+/** Workbox cache for GET /api responses (network-first), named in vite.config.ts. */
 export const API_CACHE = 'api';

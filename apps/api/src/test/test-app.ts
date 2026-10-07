@@ -15,24 +15,24 @@ export interface TestApp {
   http: () => ReturnType<typeof request>;
 }
 
-/** L'API complète (AppModule) sur la base de test. */
+/** The full API (AppModule) on the test database. */
 export async function createTestApp(): Promise<TestApp> {
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
   const app = moduleRef.createNestApplication({ logger: false });
   configureApp(app);
-  // Un vrai port : supertest réutilise le serveur au lieu d'en ouvrir un par requête.
+  // A real port: supertest reuses the server instead of opening one per request.
   await app.listen(0);
   const db = app.get<Database>(DB);
   return { app, db, http: () => request(app.getHttpServer()) };
 }
 
-/** Base vide : les 6 zones de la carte, aucun manager ni présence. */
+/** Empty database: the map's 6 zones, no managers or presences. */
 export async function resetDatabase(db: Database): Promise<void> {
   await db.execute(sql`TRUNCATE presences, managers, zones CASCADE`);
   await seedDatabase(db, { demoPresences: false });
 }
 
-/** Connexion par pseudo ; renvoie le manager et l'en-tête Cookie à rejouer. */
+/** Login by nickname; returns the manager and the Cookie header to replay. */
 export async function login(http: TestApp['http'], displayName: string) {
   const response = await http().post('/api/auth/login').send({ displayName }).expect(200);
   const cookie = ([] as string[])

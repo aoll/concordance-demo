@@ -1,6 +1,6 @@
 /**
- * Chaque table vit dans son module (`managers/`, `zones/`, `presences/`). Ce fichier les réunit
- * pour le client Drizzle (`drizzle(pool, { schema })`) et pour les scripts de migration.
+ * Each table lives in its own module (`managers/`, `zones/`, `presences/`). This file gathers them
+ * for the Drizzle client (`drizzle(pool, { schema })`) and for the migration scripts.
  */
 export * from '../managers/managers.schema';
 export * from '../presences/presences.schema';

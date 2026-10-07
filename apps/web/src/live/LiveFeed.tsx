@@ -20,7 +20,7 @@ const DOT: Record<LiveStatus, string> = {
   offline: 'bg-full',
 };
 
-/** Pastille d'état de la connexion temps réel. */
+/** Status badge for the real-time connection. */
 export function LiveBadge({ status }: { status: LiveStatus }) {
   return (
     <Badge
@@ -35,7 +35,7 @@ export function LiveBadge({ status }: { status: LiveStatus }) {
   );
 }
 
-/** Fil « Activité en direct » : les derniers événements reçus, le plus récent en haut. */
+/** "Activité en direct" feed: the latest events received, most recent on top. */
 export function LiveFeed({ entries }: { entries: FeedEntry[] }) {
   return (
     <Card className="gap-2 py-3 shadow-none" aria-label="Activité en direct" role="region">

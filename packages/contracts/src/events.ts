@@ -2,10 +2,10 @@ import { z } from 'zod';
 import { ZoneShapeSchema } from './zones';
 
 /**
- * Événements WebSocket (socket.io) émis par l'API après chaque commit d'inscription ou de fin
- * de shift. OpenAPI ne décrit pas le WebSocket : ce schéma Zod est le contrat, importé par la
- * gateway Nest et par le front. Il reprend la forme de `ZoneOccupancy` du contrat REST, pour
- * que le front remplace la zone dans le cache de `GET /zones` sans refetch.
+ * WebSocket (socket.io) events emitted by the API after each sign-up or shift-end
+ * commit. OpenAPI does not describe the WebSocket: this Zod schema is the contract, imported by the
+ * Nest gateway and by the front end. It mirrors the shape of `ZoneOccupancy` from the REST contract, so
+ * that the front end replaces the zone in the `GET /zones` cache without a refetch.
  */
 export const ZONE_OCCUPANCY_UPDATED = 'zone.occupancy.updated';
 
@@ -24,9 +24,9 @@ export const ZoneSnapshotSchema = z.object({
 });
 
 export const ZoneOccupancyUpdatedSchema = z.object({
-  /** Occupation complète de la zone après le changement : appliquer l'événement est idempotent. */
+  /** Full occupancy of the zone after the change: applying the event is idempotent. */
   zone: ZoneSnapshotSchema,
-  /** Ce qui vient de se passer, pour le fil d'activité. */
+  /** What just happened, for the activity feed. */
   change: z.object({
     kind: z.enum(['joined', 'left']),
     manager: ManagerRefSchema,
@@ -37,7 +37,7 @@ export const ZoneOccupancyUpdatedSchema = z.object({
 export type ZoneSnapshot = z.infer<typeof ZoneSnapshotSchema>;
 export type ZoneOccupancyUpdated = z.infer<typeof ZoneOccupancyUpdatedSchema>;
 
-/** Typage socket.io des deux côtés : `Server<{}, ServerToClientEvents>` et `Socket<ServerToClientEvents>`. */
+/** socket.io typing on both sides: `Server<{}, ServerToClientEvents>` and `Socket<ServerToClientEvents>`. */
 export interface ServerToClientEvents {
   [ZONE_OCCUPANCY_UPDATED]: (event: ZoneOccupancyUpdated) => void;
 }

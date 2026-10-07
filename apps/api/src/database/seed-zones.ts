@@ -1,10 +1,10 @@
 import type { zones } from '../zones/zones.schema';
 
 /**
- * Zones de départ, reprises de la maquette (plan schématique, viewBox 800 × 600).
- * Elles ne sont insérées que dans une base sans zone : ensuite, les zones vivent en base
- * (nom, capacité, ordre, tracé) et le front les dessine telles que l'API les renvoie.
- * Les id sont fixes pour qu'un lien `?zone=<id>` soit le même en local, en test et sur Railway.
+ * Initial zones, taken from the mockup (schematic plan, viewBox 800 × 600).
+ * They are only inserted into a database with no zones: afterwards, zones live in the database
+ * (name, capacity, order, outline) and the front end draws them as the API returns them.
+ * The ids are fixed so that a `?zone=<id>` link is the same locally, in tests and on Railway.
  */
 export const SEED_ZONES = [
   {
@@ -69,7 +69,7 @@ export const SEED_ZONES = [
   },
 ] as const satisfies (typeof zones.$inferInsert)[];
 
-/** Raccourci pour les tests : l'id d'une zone de départ à partir de son nom. */
+/** Shortcut for tests: the id of an initial zone from its name. */
 export function seedZoneId(name: (typeof SEED_ZONES)[number]['name']): string {
   const zone = SEED_ZONES.find((candidate) => candidate.name === name);
   if (!zone) throw new Error(name);

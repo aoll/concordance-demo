@@ -1,6 +1,6 @@
 /**
- * Fetch utilisé par tous les hooks générés : cookie de session inclus, et toute réponse non 2xx
- * levée en ApiError pour que TanStack Query passe en erreur (rollback optimiste, toasts…).
+ * Fetch used by all generated hooks: session cookie included, and any non-2xx response
+ * thrown as ApiError so that TanStack Query goes into error state (optimistic rollback, toasts…).
  */
 export class ApiError<TBody = unknown> extends Error {
   constructor(
@@ -12,7 +12,7 @@ export class ApiError<TBody = unknown> extends Error {
   }
 }
 
-/** Orval type l'erreur des hooks avec ce générique (ex. ErrorType<ErrorResponse>). */
+/** Orval types the hooks' error with this generic (e.g. ErrorType<ErrorResponse>). */
 export type ErrorType<TBody> = ApiError<TBody>;
 
 export async function customFetch<T>(url: string, options?: RequestInit): Promise<T> {

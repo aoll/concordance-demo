@@ -1,5 +1,5 @@
--- Les zones vivent en base : ordre, tracé et étiquette rejoignent nom et capacité, le slug disparaît.
--- Une base existante (Railway) garde ses présences : ses 6 zones reçoivent leur id fixe du seed.
+-- Zones now live in the database: order, shape and label join name and capacity, and the slug goes away.
+-- An existing database (Railway) keeps its presences: its 6 zones receive their fixed seed id.
 ALTER TABLE "zones" ADD COLUMN "position" integer;--> statement-breakpoint
 ALTER TABLE "zones" ADD COLUMN "shape" text;--> statement-breakpoint
 ALTER TABLE "zones" ADD COLUMN "label_x" integer;--> statement-breakpoint

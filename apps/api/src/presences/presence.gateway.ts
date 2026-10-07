@@ -9,9 +9,9 @@ import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import type { Server } from 'socket.io';
 
 /**
- * Diffusion temps réel de l'occupation des zones (socket.io, sur le port de l'API).
- * Lecture seule et publique, comme `GET /zones`. Une seule instance ici ; à plusieurs
- * instances, on brancherait l'adapter Redis de socket.io pour partager les diffusions.
+ * Real-time broadcast of zone occupancy (socket.io, on the API port).
+ * Read-only and public, like `GET /zones`. A single instance here; with several
+ * instances, we would plug in socket.io's Redis adapter to share broadcasts.
  */
 @WebSocketGateway({ cors: false })
 export class PresenceGateway {
@@ -20,9 +20,9 @@ export class PresenceGateway {
   @WebSocketServer()
   private readonly server?: Server<Record<string, never>, ServerToClientEvents>;
 
-  /** Appelé après le commit : un événement validé par le contrat partagé, envoyé à tous. */
+  /** Called after the commit: an event validated by the shared contract, sent to everyone. */
   broadcast(event: ZoneOccupancyUpdated): void {
-    // Sans serveur HTTP (export du contrat), la gateway n'est pas montée : rien à diffuser.
+    // Without an HTTP server (contract export), the gateway is not mounted: nothing to broadcast.
     if (!this.server) return;
     this.server.emit(ZONE_OCCUPANCY_UPDATED, ZoneOccupancyUpdatedSchema.parse(event));
     this.logger.debug(`${event.change.kind} ${event.zone.name} → ${event.zone.occupied}`);

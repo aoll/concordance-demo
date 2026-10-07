@@ -8,7 +8,7 @@ const MESSAGES: Partial<Record<ErrorResponse['code'], string>> = {
   UNAUTHENTICATED: 'Votre session a expiré. Reconnectez-vous.',
 };
 
-/** Message affiché pour une erreur d'API : on lit le code métier, jamais le message brut. */
+/** Message shown for an API error: we read the business code, never the raw message. */
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     const code = (error.body as Partial<ErrorResponse> | undefined)?.code;

@@ -15,7 +15,7 @@ import { optimisticPresence, withJoined, withLeft } from './cache';
 
 const myShiftParams = (managerId: string) => ({ managerId, active: 'true' as const });
 
-/** Le shift en cours du manager connecté (au plus un : règle métier côté API). */
+/** The current shift of the signed-in manager (at most one: business rule on the API side). */
 export function useMyShift(manager: Manager) {
   const presences = useListPresences(myShiftParams(manager.id));
   return presences.data?.[0];
@@ -29,8 +29,8 @@ interface Snapshot {
 }
 
 /**
- * Inscription et fin de shift en mise à jour optimiste : le cache change avant la réponse,
- * l'instantané est restauré si l'API refuse (409 ZONE_FULL…), puis on resynchronise.
+ * Shift sign-up and end as an optimistic update: the cache changes before the response,
+ * the snapshot is restored if the API refuses (409 ZONE_FULL…), then we resync.
  */
 export function useShiftMutations(manager: Manager) {
   const queryClient = useQueryClient();

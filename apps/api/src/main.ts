@@ -13,14 +13,14 @@ import { serveWeb } from './web';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableShutdownHooks();
-  // Démo : migrations et seed idempotents au démarrage, pour que `pnpm dev` suffise.
+  // Demo: idempotent migrations and seed at startup, so that `pnpm dev` is enough.
   const db = app.get<Database>(DB);
   await migrateDatabase(db);
   await seedDatabase(db);
   const document = configureApp(app);
   SwaggerModule.setup('docs', app, document);
   if (process.env.NODE_ENV !== 'production') {
-    // En dev, chaque redémarrage réécrit le contrat ; `orval --watch` régénère le client.
+    // In dev, each restart rewrites the contract; `orval --watch` regenerates the client.
     await writeOpenApi(document);
   }
   const config = app.get<AppConfig>(APP_CONFIG);

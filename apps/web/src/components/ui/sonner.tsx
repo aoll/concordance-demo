@@ -1,7 +1,7 @@
 import { CircleAlert } from 'lucide-react';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
 
-// Variante shadcn sans next-themes : le thème suit le système, comme le reste de l'app.
+// shadcn variant without next-themes: the theme follows the system, like the rest of the app.
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner

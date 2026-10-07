@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import { type Database, DB, one } from '../database/database.module';
 import { type ManagerRow, managers } from '../managers/managers.schema';
 
-/** Contenu du JWT de session : seulement l'id du manager. */
+/** Session JWT payload: only the manager's id. */
 interface SessionToken {
   sub: string;
 }
@@ -16,7 +16,7 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
-  /** Pas de mot de passe : le pseudo identifie le manager, créé au premier passage. */
+  /** No password: the username identifies the manager, created on first visit. */
   async login(displayName: string): Promise<{ manager: ManagerRow; token: string }> {
     await this.db.insert(managers).values({ displayName }).onConflictDoNothing();
     const manager = one(
@@ -26,7 +26,7 @@ export class AuthService {
     return { manager, token };
   }
 
-  /** Manager du jeton, ou null si le jeton est absent, invalide, expiré ou orphelin. */
+  /** Manager for the token, or null if the token is missing, invalid, expired or orphaned. */
   async authenticate(token: string | undefined): Promise<ManagerRow | null> {
     if (!token) return null;
     const payload = await this.jwt.verifyAsync<SessionToken>(token).catch(() => null);

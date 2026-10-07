@@ -3,19 +3,19 @@ import { join } from 'node:path';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { NextFunction, Request, Response } from 'express';
 
-/** Préfixes servis par Nest lui-même : jamais renvoyés vers le front. */
+/** Prefixes served by Nest itself: never redirected to the front end. */
 const BACKEND_PATHS = ['/api', '/socket.io', '/health', '/docs'];
 
 /**
- * En déploiement (une seule image), l'API sert aussi le build du front : même origine pour
- * le REST, la socket et le cookie de session, comme le proxy Vite en local. Sans `dir`
- * (dev, tests), rien ne change.
+ * In deployment (a single image), the API also serves the front-end build: same origin for
+ * REST, the socket and the session cookie, like the Vite proxy locally. Without `dir`
+ * (dev, tests), nothing changes.
  */
 export function serveWeb(app: NestExpressApplication, dir: string | undefined): void {
   if (!dir) return;
   const index = join(dir, 'index.html');
   if (!existsSync(index)) throw new Error(`WEB_DIST_DIR sans index.html : ${dir}`);
-  // Le service worker et le manifest doivent être relus à chaque visite pour que la PWA se mette à jour.
+  // The service worker and the manifest must be re-fetched on every visit so the PWA updates.
   app.useStaticAssets(dir, {
     index: false,
     setHeaders: (res, path) => {
@@ -24,7 +24,7 @@ export function serveWeb(app: NestExpressApplication, dir: string | undefined): 
       }
     },
   });
-  // Toute autre navigation retombe sur l'appli (routes TanStack Router côté client).
+  // Any other navigation falls back to the app (TanStack Router routes on the client side).
   app.use((req: Request, res: Response, next: NextFunction) => {
     const isBackend = BACKEND_PATHS.some((p) => req.path === p || req.path.startsWith(`${p}/`));
     if (req.method !== 'GET' || isBackend) return next();

@@ -2,8 +2,8 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
 /**
- * Codes d'erreur métier renvoyés par l'API. Le front s'appuie sur `code`, jamais sur `message`.
- * Les erreurs de validation (400) gardent le format de nestjs-zod.
+ * Business error codes returned by the API. The front end relies on `code`, never on `message`.
+ * Validation errors (400) keep the nestjs-zod format.
  */
 export const ErrorCodeSchema = z.enum([
   'UNAUTHENTICATED',

@@ -6,13 +6,13 @@ import * as schema from './schema';
 
 export type Database = NodePgDatabase<typeof schema>;
 
-/** Jetons d'injection : `@Inject(DB) db: Database`. */
+/** Injection tokens: `@Inject(DB) db: Database`. */
 export const DB = Symbol('DB');
 const POOL = Symbol('POOL');
 
 /**
- * Le pool `pg` ne se connecte qu'à la première requête : l'export du contrat (`pnpm generate`)
- * instancie l'AppModule sans base, et ça doit continuer à marcher.
+ * The `pg` pool only connects on the first query: the contract export (`pnpm generate`)
+ * instantiates the AppModule without a database, and that must keep working.
  */
 @Global()
 @Module({
@@ -38,7 +38,7 @@ export class DatabaseModule implements OnApplicationShutdown {
   }
 }
 
-/** Première ligne d'un résultat qui en contient forcément une (INSERT … RETURNING, count). */
+/** First row of a result that necessarily contains one (INSERT … RETURNING, count). */
 export function one<T>(rows: T[]): T {
   const [row] = rows;
   if (row === undefined) throw new Error('Requête sans résultat');

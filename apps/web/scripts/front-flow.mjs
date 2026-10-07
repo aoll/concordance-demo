@@ -1,9 +1,9 @@
-// Preuve des lots 2 et 4 côté front : carte branchée sur les hooks Orval, inscription optimiste,
-// rollback sur 409 ZONE_FULL, fin de shift, déconnexion. Tourne sur la vraie API (Nest + Postgres),
-// en téléphone puis en tablette. Les écritures du navigateur sont retenues 600 ms (page.route)
-// pour voir l'optimisme avant la réponse ; la course est jouée par d'autres managers via l'API.
-// Prérequis : Postgres du docker compose (pnpm db:up) et l'API buildée (pnpm build).
-// Base dédiée concordance_front_proof, recréée à chaque run. Captures dans $PROOF_DIR (./front-proof).
+// Front-end proof for lots 2 and 4: map wired to the Orval hooks, optimistic sign-up,
+// rollback on 409 ZONE_FULL, end of shift, logout. Runs against the real API (Nest + Postgres),
+// on a phone then a tablet. Browser writes are held back 600 ms (page.route)
+// to see the optimism before the response; the race is played by other managers via the API.
+// Prerequisites: Postgres from docker compose (pnpm db:up) and the built API (pnpm build).
+// Dedicated database concordance_front_proof, recreated on every run. Screenshots in $PROOF_DIR (./front-proof).
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -56,7 +56,7 @@ const vite = spawn('node_modules/.bin/vite', ['--port', String(PORT), '--strictP
 children.push(vite);
 await waitFor(vite, String(PORT), 'vite');
 
-/** Un autre manager, piloté directement par l'API : connexion puis inscription sur une zone. */
+/** Another manager, driven directly through the API: login then sign-up on a zone. */
 async function otherManagerJoins(zoneName, displayName) {
   const login = await fetch(`${API}/auth/login`, {
     method: 'POST',
@@ -93,8 +93,8 @@ async function run(name, device) {
   console.log(`\n— ${name}`);
   const context = await browser.newContext({ ...device, locale: 'fr-FR' });
   const page = await context.newPage();
-  // Écritures retenues côté navigateur : l'UI optimiste doit bouger avant la réponse.
-  // Pendant la course, la requête attend que les autres managers aient pris les places.
+  // Writes held back on the browser side: the optimistic UI must move before the response.
+  // During the race, the request waits until the other managers have taken the spots.
   let gate;
   await page.route(`${APP}/api/presences**`, async (route) => {
     if (route.request().method() === 'GET') return route.continue();
@@ -124,7 +124,7 @@ async function run(name, device) {
   );
   await shot('2-carte');
 
-  // Inscription optimiste sur Orly : le compteur bouge avant la réponse (600 ms).
+  // Optimistic sign-up on Orly: the counter moves before the response (600 ms).
   await zone('Orly').click();
   check(
     'panneau : Orly sélectionnée',
@@ -153,22 +153,22 @@ async function run(name, device) {
   check('panneau : « Alex L. (vous) » listé', await panel.getByText('Alex L. (vous)').isVisible());
   await shot('3-en-shift');
 
-  // Une autre zone est verrouillée tant que le shift est en cours.
+  // Another zone is locked while the shift is in progress.
   await zone('Saint-Denis').click();
   check(
     'autre zone : inscription désactivée pendant le shift',
     await panel.getByRole('button', { name: "Je m'inscris ici" }).isDisabled(),
   );
 
-  // Fin de shift depuis le bandeau, elle aussi optimiste.
+  // End of shift from the banner, also optimistic.
   await page.locator('.shift').getByRole('button', { name: 'Terminer mon shift' }).click();
   await count('Orly').getByText('0/3').waitFor({ timeout: 300 });
   await page.locator('.shift').waitFor({ state: 'detached' });
   check('fin de shift : Orly revient à 0/3 et le bandeau disparaît', true);
 
-  // Course perdue : d'autres managers prennent les places de Saint-Denis pendant notre requête.
-  // Le temps réel montre leurs arrivées, l'API répond 409 ZONE_FULL, rollback.
-  // On attend d'abord la resynchronisation de la fin de shift (bouton réactivé).
+  // Lost race: other managers take the Saint-Denis spots during our request.
+  // Realtime shows their arrivals, the API answers 409 ZONE_FULL, rollback.
+  // First we wait for the end-of-shift resync (button re-enabled).
   const joinButton = panel.getByRole('button', { name: "Je m'inscris ici" });
   await page.waitForFunction(() => {
     const button = [...document.querySelectorAll('aside.panel button')].at(-1);
@@ -201,13 +201,13 @@ async function run(name, device) {
   );
   await shot('4-zone-pleine');
 
-  // Déconnexion : retour à l'écran de connexion, cache hors ligne vidé.
+  // Logout: back to the login screen, offline cache cleared.
   await page.getByRole('button', { name: /^Compte de / }).click();
   await page.getByRole('menuitem', { name: /Se déconnecter/ }).click();
   await page.getByRole('heading', { name: 'Bienvenue' }).waitFor();
   check('déconnexion : retour à la connexion', true);
   await context.close();
-  // Les autres managers libèrent Saint-Denis pour le parcours suivant.
+  // The other managers free up Saint-Denis for the next run.
   await Promise.all(leaves.map((leave) => leave()));
 }
 

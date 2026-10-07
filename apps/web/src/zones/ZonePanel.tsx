@@ -23,10 +23,10 @@ interface ZonePanelProps {
   shiftZone: ZoneOccupancy | undefined;
   busy: boolean;
   offline: boolean;
-  /** Téléphone : état de la bottom sheet (sans effet sur tablette). */
+  /** Phone: bottom sheet state (no effect on tablet). */
   sheetOpen: boolean;
   onToggleSheet: () => void;
-  /** Liste des zones, affichée en tête de la bottom sheet sur téléphone. */
+  /** Zone list, shown at the top of the bottom sheet on phone. */
   list?: ReactNode;
   onJoin: () => void;
   onEnd: () => void;
@@ -35,7 +35,7 @@ interface ZonePanelProps {
 
 const action = 'h-11 w-full text-[0.95rem] font-semibold';
 
-/** Détail d'une zone : remplissage, managers présents et action d'inscription. */
+/** Zone detail: fill level, managers present and sign-up action. */
 export function ZonePanel({
   zone,
   me,

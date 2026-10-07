@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { Global, Module } from '@nestjs/common';
 import { z } from 'zod';
 
-/** Variables d'environnement validées au démarrage : une config invalide arrête l'API tout de suite. */
+/** Environment variables validated at startup: an invalid config stops the API immediately. */
 const DEV_JWT_SECRET = 'change-me-in-dev';
 
 const ConfigSchema = z
@@ -12,7 +12,7 @@ const ConfigSchema = z
     API_PORT: z.coerce.number().int().positive().default(3000),
     DATABASE_URL: z.url().default('postgres://concordance:concordance@localhost:5432/concordance'),
     JWT_SECRET: z.string().min(8).default(DEV_JWT_SECRET),
-    /** Build du front servi par l'API (image de déploiement). Absent en dev : Vite sert le front. */
+    /** Front-end build served by the API (deployment image). Absent in dev: Vite serves the front end. */
     WEB_DIST_DIR: z.string().min(1).optional(),
   })
   .refine((config) => config.NODE_ENV !== 'production' || config.JWT_SECRET !== DEV_JWT_SECRET, {
@@ -22,14 +22,14 @@ const ConfigSchema = z
 
 export type AppConfig = z.infer<typeof ConfigSchema>;
 
-/** Jeton d'injection de la config. */
+/** Config injection token. */
 export const APP_CONFIG = Symbol('APP_CONFIG');
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
-  // Le .env de la racine du monorepo, s'il existe (les variables déjà définies gagnent).
+  // The monorepo root .env, if it exists (already-defined variables win).
   const envFile = join(__dirname, '..', '..', '..', '.env');
   if (env === process.env && existsSync(envFile)) process.loadEnvFile(envFile);
-  // Les hébergeurs (Railway…) imposent le port par PORT ; API_PORT reste prioritaire.
+  // Hosts (Railway…) set the port via PORT; API_PORT still takes priority.
   const parsed = ConfigSchema.safeParse({ ...env, API_PORT: env.API_PORT ?? env.PORT });
   if (!parsed.success) {
     throw new Error(`Configuration invalide :\n${z.prettifyError(parsed.error)}`);

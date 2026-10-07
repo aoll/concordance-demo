@@ -4,9 +4,9 @@ import { createTestApp, login, resetDatabase, type TestApp } from '../test/test-
 import { presences } from './presences.schema';
 
 /**
- * Critère de sortie du lot 3 : N inscriptions simultanées sur une zone de capacité 3
- * donnent exactement 3 présences. Les requêtes passent par HTTP, en parallèle, et
- * le pool `pg` ouvre plusieurs connexions : les transactions se chevauchent vraiment.
+ * Exit criterion of lot 3: N simultaneous sign-ups on a zone with capacity 3
+ * yield exactly 3 presences. Requests go through HTTP, in parallel, and
+ * the `pg` pool opens several connections: the transactions really overlap.
  */
 describe('capacité sous concurrence (lot 3b)', () => {
   const N = 30;
@@ -39,7 +39,7 @@ describe('capacité sous concurrence (lot 3b)', () => {
     return row?.count;
   };
 
-  // Plusieurs tours : une course gagnée par chance une fois ne suffit pas.
+  // Several rounds: a race won by luck once is not enough.
   it.each([1, 2, 3, 4, 5])(
     `${N} managers s'inscrivent en même temps sur une zone de capacité 3 (tour %i)`,
     async () => {

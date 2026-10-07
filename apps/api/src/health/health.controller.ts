@@ -4,7 +4,7 @@ import { HealthCheck, HealthCheckService, HealthIndicatorService } from '@nestjs
 import { sql } from 'drizzle-orm';
 import { type Database, DB } from '../database/database.module';
 
-/** Sonde pour l'orchestrateur, hors contrat du front : `GET /health` (sans préfixe /api). */
+/** Probe for the orchestrator, outside the front end's contract: `GET /health` (no /api prefix). */
 @ApiExcludeController()
 @Controller('health')
 export class HealthController {

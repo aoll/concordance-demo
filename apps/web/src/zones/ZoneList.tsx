@@ -5,12 +5,12 @@ import { fillOf } from './fill';
 
 interface ZoneListProps {
   zones: ZoneOccupancy[];
-  /** Id de la zone sélectionnée. */
+  /** ID of the selected zone. */
   selected: string | undefined;
   onSelect: (zoneId: string) => void;
 }
 
-/** Liste des zones de la bottom sheet (téléphone) : un autre chemin que la carte pour choisir. */
+/** Zone list in the bottom sheet (phone): another way besides the map to pick a zone. */
 export function ZoneList({ zones, selected, onSelect }: ZoneListProps) {
   return (
     <ToggleGroup
@@ -18,7 +18,7 @@ export function ZoneList({ zones, selected, onSelect }: ZoneListProps) {
       variant="outline"
       size="sm"
       value={selected ?? ''}
-      // Une zone reste toujours sélectionnée : un second toucher sur la même ne la désélectionne pas.
+      // A zone always stays selected: a second tap on the same one does not deselect it.
       onValueChange={(zoneId) => zoneId && onSelect(zoneId)}
       aria-label="Zones"
       className="-mx-4 w-auto gap-2 overflow-x-auto px-4 pb-0.5 shadow-none [scrollbar-width:none] min-[720px]:hidden"

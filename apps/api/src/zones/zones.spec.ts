@@ -37,7 +37,7 @@ describe('zones et santé (lot 1)', () => {
       capacity: number;
       shape: { path: string; label: { x: number; y: number } };
     }>;
-    // Id fixes du seed : un lien ?zone=<id> est le même sur tous les environnements.
+    // Fixed seed ids: a ?zone=<id> link is the same across all environments.
     expect(zones.map((zone) => zone.id)).toEqual(SEED_ZONES.map((zone) => zone.id));
     expect(zones[0]?.shape).toEqual({
       path: SEED_ZONES[0].shape,

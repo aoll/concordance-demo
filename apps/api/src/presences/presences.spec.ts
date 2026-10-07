@@ -140,7 +140,7 @@ describe('présences (lot 3b)', () => {
       .expect(404);
     expect(missing.body).toMatchObject({ code: 'NOT_FOUND' });
 
-    // La place est libérée et le manager peut repartir en shift.
+    // The spot is freed and the manager can start a shift again.
     const orly = await t
       .http()
       .get(`/api/zones/${zoneId('Orly')}`)

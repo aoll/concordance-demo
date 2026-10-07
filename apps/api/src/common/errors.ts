@@ -3,8 +3,8 @@ import type { Response } from 'express';
 import type { ErrorCode, ErrorResponseDto } from './error.dto';
 
 /**
- * Erreurs métier : les services les lèvent sans rien savoir de HTTP ;
- * `BusinessErrorFilter` les traduit en `ErrorResponse` avec le bon statut.
+ * Business errors: services throw them without knowing anything about HTTP;
+ * `BusinessErrorFilter` translates them into an `ErrorResponse` with the right status.
  */
 export abstract class BusinessError extends Error {
   abstract readonly code: ErrorCode;
@@ -61,7 +61,7 @@ export class BusinessErrorFilter implements ExceptionFilter<BusinessError> {
     const statusCode = STATUS[error.code];
     const body: ErrorResponseDto = { statusCode, code: error.code, message: error.message };
     const response = host.switchToHttp().getResponse<Response>();
-    // Lu par RequestLogger pour journaliser le code métier.
+    // Read by RequestLogger to log the business code.
     response.locals.errorCode = error.code;
     response.status(statusCode).json(body);
   }

@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// Même origine pour l'API et la socket temps réel (socket.io sur /socket.io, en WebSocket).
+// Same origin for the API and the realtime socket (socket.io on /socket.io, over WebSocket).
 const proxy = {
   '/api': 'http://localhost:3000',
   '/socket.io': { target: 'http://localhost:3000', ws: true },
@@ -44,15 +44,15 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Shell en cache : JS, CSS, HTML et icônes précachés, toute navigation retombe sur index.html.
+        // Cached shell: JS, CSS, HTML and icons precached, any navigation falls back to index.html.
         globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//],
         runtimeCaching: [
           {
-            // API en network-first : réponse fraîche si le réseau répond, dernière réponse connue sinon.
-            // Sauf la session : une copie en cache survivrait à la déconnexion. Hors ligne, la
-            // session vient du cache TanStack persisté, purgé lui aussi à la déconnexion.
+            // API is network-first: fresh response if the network answers, last known response otherwise.
+            // Except the session: a cached copy would survive logout. Offline, the
+            // session comes from the persisted TanStack cache, which is also purged on logout.
             urlPattern: ({ url, sameOrigin }) =>
               sameOrigin &&
               url.pathname.startsWith('/api/') &&
@@ -70,11 +70,11 @@ export default defineConfig({
       },
     }),
   ],
-  // Alias des composants shadcn/ui (`@/components/ui/…`), comme dans components.json.
+  // Alias for shadcn/ui components (`@/components/ui/…`), as in components.json.
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   server: {
     port: 5173,
-    // Même origine pour le front et l'API : le cookie de session passe sans CORS.
+    // Same origin for the front end and the API: the session cookie works without CORS.
     proxy,
   },
   preview: {

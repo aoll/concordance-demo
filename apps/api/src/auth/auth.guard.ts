@@ -13,7 +13,7 @@ export const SESSION_COOKIE = 'concordance_session';
 
 type AuthenticatedRequest = Request & { manager?: ManagerRow };
 
-/** Lit le cookie de session et attache le manager à la requête ; sinon 401 UNAUTHENTICATED. */
+/** Reads the session cookie and attaches the manager to the request; otherwise 401 UNAUTHENTICATED. */
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private readonly auth: AuthService) {}
@@ -27,7 +27,7 @@ export class AuthGuard implements CanActivate {
   }
 }
 
-/** Le manager connecté, posé par `AuthGuard`. */
+/** The logged-in manager, set by `AuthGuard`. */
 export const CurrentManager = createParamDecorator(
   (_data: unknown, context: ExecutionContext): ManagerRow => {
     const manager = context.switchToHttp().getRequest<AuthenticatedRequest>().manager;

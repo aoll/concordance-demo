@@ -4,21 +4,21 @@ import { LINES, MARNE, SEINE, STATIONS, TERMINI, WOODS } from './geometry';
 
 interface ZoneMapProps {
   zones: ZoneOccupancy[];
-  /** Id de la zone sélectionnée. */
+  /** Id of the selected zone. */
   selected: string | undefined;
   onSelect: (zoneId: string) => void;
-  /** Id des zones qui viennent de changer en temps réel : un bref flash attire l'œil. */
+  /** Ids of the zones that just changed in real time: a brief flash catches the eye. */
   flashing?: ReadonlySet<string>;
 }
 
 /**
- * Carte SVG de la maquette. Ordre des calques : fond, lignes RER, gares, puis les zones
- * au-dessus des lignes pour rester cliquables, et enfin les étiquettes. Les zones sont
- * dessinées à partir de l'API (tracé et étiquette en base) : aucune liste en dur.
+ * SVG map from the mockup. Layer order: background, RER lines, stations, then the zones
+ * above the lines so they stay clickable, and finally the labels. Zones are
+ * drawn from the API (outline and label in the database): no hard-coded list.
  */
 export function ZoneMap({ zones, selected, onSelect, flashing }: ZoneMapProps) {
   return (
-    // biome-ignore lint/a11y/useSemanticElements: un <svg> ne peut pas être un <fieldset>.
+    // biome-ignore lint/a11y/useSemanticElements: an <svg> cannot be a <fieldset>.
     <svg
       className="map"
       viewBox="0 0 800 600"
@@ -44,7 +44,7 @@ export function ZoneMap({ zones, selected, onSelect, flashing }: ZoneMapProps) {
         </radialGradient>
       </defs>
 
-      {/* biome-ignore lint/a11y/noAriaHiddenOnFocusable: fond décoratif, rien n'y est focusable. */}
+      {/* biome-ignore lint/a11y/noAriaHiddenOnFocusable: decorative background, nothing in it is focusable. */}
       <g aria-hidden="true" className="backdrop">
         <rect width="800" height="600" fill="url(#ground)" />
         <ellipse className="ring" cx="422" cy="292" rx="190" ry="152" />
@@ -86,7 +86,7 @@ export function ZoneMap({ zones, selected, onSelect, flashing }: ZoneMapProps) {
         const fill = fillOf(zone);
         const isSelected = zone.id === selected;
         return (
-          // biome-ignore lint/a11y/useSemanticElements: un <path> SVG ne peut pas être un <button>.
+          // biome-ignore lint/a11y/useSemanticElements: an SVG <path> cannot be a <button>.
           <g
             key={zone.id}
             data-zone-id={zone.id}
@@ -111,7 +111,7 @@ export function ZoneMap({ zones, selected, onSelect, flashing }: ZoneMapProps) {
         );
       })}
 
-      {/* biome-ignore lint/a11y/noAriaHiddenOnFocusable: étiquettes doublant l'aria-label des zones. */}
+      {/* biome-ignore lint/a11y/noAriaHiddenOnFocusable: labels duplicating the zones' aria-label. */}
       <g aria-hidden="true">
         {zones.map((zone) => {
           const { x, y } = zone.shape.label;
