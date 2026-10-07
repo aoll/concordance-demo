@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+**/.turbo
+.git
+.env
+apps/api/openapi.json
+packages/api-client/src/generated
+apps/web/src/routeTree.gen.ts
+apps/web/*-proof

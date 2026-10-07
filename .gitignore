@@ -22,3 +22,4 @@ apps/web/front-proof/
 
 # Captures de preuve du lot 5 (scripts/live-two-browsers.mjs)
 apps/web/live-proof/
+apps/web/deploy-proof/
