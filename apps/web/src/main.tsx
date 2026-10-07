@@ -2,6 +2,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Toaster } from '@/components/ui/sonner';
 import { OfflineBanner } from './pwa/OfflineBanner';
 import { createQueryClient, persistOptions } from './pwa/persister';
 import { routeTree } from './routeTree.gen';
@@ -29,6 +30,7 @@ createRoot(root).render(
     >
       <OfflineBanner />
       <RouterProvider router={router} />
+      <Toaster position="top-center" richColors closeButton />
     </PersistQueryClientProvider>
   </StrictMode>,
 );

@@ -1,9 +1,18 @@
 import type { Manager, Presence, ZoneOccupancy } from '@concordance/api-client';
+import { Info, UserRound, WifiOff } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { fillOf } from './fill';
 
@@ -25,7 +34,6 @@ interface ZonePanelProps {
 }
 
 const action = 'h-11 w-full text-[0.95rem] font-semibold';
-const hint = 'text-muted-foreground text-sm';
 
 /** Détail d'une zone : remplissage, managers présents et action d'inscription. */
 export function ZonePanel({
@@ -82,27 +90,34 @@ export function ZonePanel({
       </div>
 
       {zone.managers.length > 0 ? (
-        <ul className="flex flex-col">
-          {zone.managers.map((manager) => (
-            <li key={manager.id}>
-              <div
-                className={cn(
-                  'flex justify-between gap-2 py-1.5 text-sm',
-                  manager.id === me.id && 'font-semibold',
-                )}
-              >
-                <span>
+        <Table aria-label={`Managers en shift sur ${zone.name}`}>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="text-muted-foreground h-8 px-0 text-xs">En shift</TableHead>
+              <TableHead className="text-muted-foreground h-8 px-0 text-right text-xs">
+                Rôle
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {zone.managers.map((manager) => (
+              <TableRow key={manager.id} className={cn(manager.id === me.id && 'font-semibold')}>
+                <TableCell className="px-0">
                   {manager.displayName}
                   {manager.id === me.id && ' (vous)'}
-                </span>
-                <span className="text-muted-foreground font-mono text-xs">manager</span>
-              </div>
-              <Separator />
-            </li>
-          ))}
-        </ul>
+                </TableCell>
+                <TableCell className="text-muted-foreground px-0 text-right font-mono text-xs">
+                  manager
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       ) : (
-        <p className={hint}>Personne sur cette zone pour l'instant.</p>
+        <Alert className="text-muted-foreground border-dashed bg-transparent">
+          <UserRound />
+          <AlertDescription>Personne sur cette zone pour l'instant.</AlertDescription>
+        </Alert>
       )}
 
       {isMine ? (
@@ -114,10 +129,13 @@ export function ZonePanel({
           <Button className={action} disabled>
             Je m'inscris ici
           </Button>
-          <p className={hint}>
-            Vous êtes déjà sur {shiftZone?.name ?? 'une autre zone'}. Terminez ce shift pour changer
-            de zone.
-          </p>
+          <Alert>
+            <Info />
+            <AlertDescription>
+              Vous êtes déjà sur {shiftZone?.name ?? 'une autre zone'}. Terminez ce shift pour
+              changer de zone.
+            </AlertDescription>
+          </Alert>
         </>
       ) : fill.key === 'full' ? (
         <Button className={action} disabled>
@@ -129,9 +147,12 @@ export function ZonePanel({
         </Button>
       )}
       {offline && (
-        <p className={hint}>
-          Hors ligne : inscription et fin de shift reprennent au retour du réseau.
-        </p>
+        <Alert>
+          <WifiOff />
+          <AlertDescription>
+            Hors ligne : inscription et fin de shift reprennent au retour du réseau.
+          </AlertDescription>
+        </Alert>
       )}
       {children}
     </aside>
