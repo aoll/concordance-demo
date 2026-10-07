@@ -147,6 +147,7 @@ APP_URL=https://<domaine>.up.railway.app pnpm --filter @concordance/web proof:de
 ## Ce qu'on ferait en production
 
 - **Identité** : le SSO RATP en OIDC à la place du pseudo, avec des rôles. Un superviseur pourrait clore le shift d'un autre manager avec le même `PATCH`, en élargissant seulement la règle d'autorisation.
+- **Exposition publique** : limitation de débit (`@nestjs/throttler`) sur la connexion et les inscriptions, la démo n'ayant ni mot de passe ni quota ; les en-têtes de sécurité (helmet) et l'image non root sont déjà en place.
 - **Plusieurs instances** : l'adapter Redis de socket.io, pour que chaque instance diffuse les événements des autres.
 - **Observabilité** : logs structurés (pino) avec un id de corrélation, traces et métriques OpenTelemetry, alertes sur les 409 et la latence de l'inscription.
 - **Vraie carte** : MapLibre sur les données ouvertes d'Île-de-France Mobilités à la place du SVG schématique, et PostGIS si les zones deviennent dynamiques.

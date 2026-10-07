@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  js-yaml@>=5.0.0 <5.4.1: ^5.4.1
+
 importers:
 
   .:
@@ -53,6 +56,9 @@ importers:
       drizzle-orm:
         specifier: ^0.45.3
         version: 0.45.3(@types/pg@8.23.1)(pg@8.23.1)
+      helmet:
+        specifier: ^8.3.0
+        version: 8.3.0
       nestjs-zod:
         specifier: ^5.5.0
         version: 5.5.0(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/swagger@11.4.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.2.7)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.6.5)
@@ -4883,6 +4889,10 @@ packages:
   headers-polyfill@5.0.1:
     resolution: {integrity: sha512-1TJ6Fih/b8h5TIcv+1+Hw0PDQWJTKDKzFZzcKOiW1wJza3XoAQlkCuXLbymPYB8+ZQyw8mHvdw560e8zVFIWyA==}
 
+  helmet@8.3.0:
+    resolution: {integrity: sha512-Qgpiaws3Sm30Av8Eah6sjMCZZwjlBu+E68rhpCWBshY1lb09HtLwj5GviX0OyQIn+ulUS0iX0AxN5n3tLZzz1w==}
+    engines: {node: '>=18.0.0'}
+
   http-cache-semantics@4.3.0:
     resolution: {integrity: sha512-M5t5LlJpS1UHMjvwRQVdFHvPISGeLAxNcrWuJkeGh0KxsqCHZ1O3NXZU/8x7cD0BDcGW8kapxMKTvwlqrNkHkA==}
 
@@ -5130,8 +5140,8 @@ packages:
     resolution: {integrity: sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==}
     hasBin: true
 
-  js-yaml@5.3.0:
-    resolution: {integrity: sha512-muutsYr+e2+d3rTgUGslq5rxbBlUy3cJ61IsHag2QNDQV+7zXWjkUpmALIajhrlLlrgRUiymj6U3zUr/TMK84Q==}
+  js-yaml@5.4.3:
+    resolution: {integrity: sha512-yzzNtgczwgoVHNigCyKTXcQJU4Y8t/ikU4UxXW0BvrLfHTGWZhsNcOT2s/a7vn81/4KqVnNmHjaUEPlvWnNwVw==}
     hasBin: true
 
   jsesc@3.1.0:
@@ -8596,7 +8606,7 @@ snapshots:
       '@nestjs/common': 11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.2.7)(@nestjs/websockets@11.2.7)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/mapped-types': 2.1.1(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)
-      js-yaml: 5.3.0
+      js-yaml: 5.4.3
       lodash: 4.18.1
       path-to-regexp: 8.4.2
       reflect-metadata: 0.2.2
@@ -11546,6 +11556,8 @@ snapshots:
       set-cookie-parser: 3.1.2
     optional: true
 
+  helmet@8.3.0: {}
+
   http-cache-semantics@4.3.0:
     optional: true
 
@@ -11775,7 +11787,7 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  js-yaml@5.3.0:
+  js-yaml@5.4.3:
     dependencies:
       argparse: 2.0.1
 
