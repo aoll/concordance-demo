@@ -1,11 +1,13 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { OfflineBanner } from './pwa/OfflineBanner';
+import { createQueryClient, persistOptions } from './pwa/persister';
 import { routeTree } from './routeTree.gen';
 import './styles.css';
 
-const queryClient = new QueryClient();
+const queryClient = createQueryClient();
 const router = createRouter({ routeTree, context: { queryClient } });
 
 declare module '@tanstack/react-router' {
@@ -24,9 +26,10 @@ async function start() {
   if (!root) throw new Error('#root introuvable');
   createRoot(root).render(
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
+        <OfflineBanner />
         <RouterProvider router={router} />
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </StrictMode>,
   );
 }

@@ -13,3 +13,6 @@ apps/web/src/routeTree.gen.ts
 
 # Fichiers temporaires du générateur de routes TanStack
 apps/web/.tanstack/
+
+# Captures de preuve du lot 6 (scripts/pwa-offline.mjs)
+apps/web/pwa-proof/
