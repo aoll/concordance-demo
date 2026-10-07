@@ -2,7 +2,7 @@
 
 Démo pour l'entretien Tech Lead Concordance : des managers RATP s'inscrivent sur une zone du réseau le temps de leur shift. Elle montre une API NestJS modulaire, un typage de bout en bout jusqu'au front, une capacité garantie par Postgres, la présence en temps réel et une PWA qui s'ouvre hors ligne.
 
-Le déroulé de la démo en 5 minutes est dans [docs/demo.md](docs/demo.md).
+La démo se montre sur la version déployée sur Railway (voir « Déploiement »), le lancement local sert de secours. Le déroulé en 5 minutes est dans [docs/demo.md](docs/demo.md).
 
 ## Lancer
 
@@ -13,7 +13,7 @@ pnpm install
 pnpm demo         # Postgres (Docker), build de prod, API (:3000) et front (:4173)
 ```
 
-Ouvrir http://localhost:4173. C'est la version à montrer : le service worker de la PWA n'est actif que sur le build.
+Ouvrir http://localhost:4173. C'est le build de production, comme sur Railway : le service worker de la PWA n'est actif que sur le build.
 
 Pour développer, `pnpm dev` lance Postgres, l'API en watch (:3000), le front Vite (:5173) et la régénération du client à chaque changement de DTO.
 
