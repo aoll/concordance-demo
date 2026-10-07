@@ -1,5 +1,5 @@
 import { ZONES } from '@concordance/contracts';
-import { HttpResponse } from 'msw';
+import { delay, HttpResponse } from 'msw';
 import {
   getGetSessionMockHandler,
   getLoginMockHandler,
@@ -25,8 +25,10 @@ export * from './generated/endpoints/zones/zones.msw';
  * Il réutilise les handlers générés par Orval : ses réponses sont donc typées par le contrat.
  * Il suit les règles métier de la proposition : capacité, une présence active par manager,
  * fin de shift réservée à son auteur.
+ *
+ * `latency` retarde les écritures pour rendre visible la mise à jour optimiste du front.
  */
-export function createMockApi() {
+export function createMockApi({ latency = 0 }: { latency?: number } = {}) {
   const uuid = () => crypto.randomUUID();
   const zones = ZONES.map((zone) => ({ ...zone, id: uuid() }));
   const managers = new Map<string, Manager>();
@@ -116,9 +118,11 @@ export function createMockApi() {
     }),
     getCreatePresenceMockHandler(async ({ request }) => {
       const { zoneId } = (await request.json()) as { zoneId: string };
+      await delay(latency);
       return join(currentManager(), zoneId);
     }),
-    getUpdatePresenceMockHandler(({ params }) => {
+    getUpdatePresenceMockHandler(async ({ params }) => {
+      await delay(latency);
       const manager = currentManager();
       const presence = presences.find((candidate) => candidate.id === params.id);
       if (!presence) return fail(404, 'NOT_FOUND', 'Présence inconnue.');
@@ -133,5 +137,18 @@ export function createMockApi() {
     }),
   ];
 
-  return { handlers, zones };
+  /** Inscrit un autre manager, comme le ferait un second navigateur (démo d'une zone pleine). */
+  const occupy = (slug: string, displayName: string): Presence => {
+    const zone = zones.find((candidate) => candidate.slug === slug);
+    if (!zone) throw new Error(`Zone inconnue : ${slug}`);
+    const manager = { id: uuid(), displayName };
+    managers.set(manager.id, manager);
+    try {
+      return join(manager, zone.id);
+    } catch {
+      throw new Error(`Impossible d'inscrire ${displayName} sur ${slug}`);
+    }
+  };
+
+  return { handlers, zones, occupy };
 }

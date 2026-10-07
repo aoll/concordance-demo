@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { OfflineBanner } from './pwa/OfflineBanner';
 import { createQueryClient, persistOptions } from './pwa/persister';
 import { routeTree } from './routeTree.gen';
+import './styles.css';
 
 const queryClient = createQueryClient();
 const router = createRouter({ routeTree, context: { queryClient } });

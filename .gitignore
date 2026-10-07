@@ -11,5 +11,11 @@ apps/api/openapi.json
 packages/api-client/src/generated/
 apps/web/src/routeTree.gen.ts
 
+# Fichiers temporaires du générateur de routes TanStack
+apps/web/.tanstack/
+
 # Captures de preuve du lot 6 (scripts/pwa-offline.mjs)
 apps/web/pwa-proof/
+
+# Captures de preuve des lots 2 et 4 (scripts/front-flow.mjs)
+apps/web/front-proof/
