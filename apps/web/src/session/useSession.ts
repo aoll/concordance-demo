@@ -6,7 +6,7 @@ import {
   useLogout,
 } from '@concordance/api-client';
 import { useQueryClient } from '@tanstack/react-query';
-import { persistOptions } from '../pwa/persister';
+import { API_CACHE, persistOptions } from '../pwa/persister';
 
 /** Session courante : un 401 n'est pas une erreur à réessayer, c'est « pas connecté ». */
 export function useSession() {
@@ -32,6 +32,8 @@ export function useLogoutAndReset() {
       // suivant verrait les données du précédent) ; la session refetchée renvoie 401 → connexion.
       onSuccess: async () => {
         await persistOptions.persister.removeClient();
+        // Et les réponses d'API gardées par le service worker (shifts de ce manager).
+        if ('caches' in window) await caches.delete(API_CACHE);
         await queryClient.resetQueries();
       },
     },

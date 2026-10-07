@@ -25,3 +25,6 @@ export const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
   }),
   maxAge: MAX_AGE,
 };
+
+/** Cache Workbox des réponses GET /api (network-first), nommé dans vite.config.ts. */
+export const API_CACHE = 'api';
