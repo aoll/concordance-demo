@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.turbo/
+coverage/
+*.log
+.env
+.DS_Store
+
+# Artefacts générés (voir README : chaîne du contrat)
+apps/api/openapi.json
+packages/api-client/src/generated/
+apps/web/src/routeTree.gen.ts

@@ -1,0 +1,37 @@
+{
+  "name": "@concordance/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./zod": "./src/zod.ts",
+    "./mocks": "./src/mocks.ts"
+  },
+  "scripts": {
+    "generate": "orval",
+    "dev": "orval --watch ../../apps/api/openapi.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^10.6.0",
+    "msw": "^2.0.0",
+    "zod": "^4.6.5",
+    "@concordance/contracts": "workspace:*"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@concordance/api": "workspace:*",
+    "@concordance/tsconfig": "workspace:*",
+    "@tanstack/react-query": "^5.104.1",
+    "@types/react": "^19.0.0",
+    "orval": "^8.40.0",
+    "react": "^19.3.0",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.3"
+  }
+}
