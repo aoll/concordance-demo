@@ -1,7 +1,7 @@
 import { and, eq, isNull, sql } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { presences } from '../database/schema';
 import { createTestApp, login, resetDatabase, type TestApp } from '../test/test-app';
+import { presences } from './presences.schema';
 
 /**
  * Critère de sortie du lot 3 : N inscriptions simultanées sur une zone de capacité 3

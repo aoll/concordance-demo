@@ -1,6 +1,6 @@
 import type { z } from 'zod';
-import type { ManagerRow } from '../database/schema';
 import type { ManagerSchema } from './manager.dto';
+import type { ManagerRow } from './managers.schema';
 
 /** Modèle → DTO : mapping explicite, les champs internes (email, matricule…) restent en base. */
 export function toManager(

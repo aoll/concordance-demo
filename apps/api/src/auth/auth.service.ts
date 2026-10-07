@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { eq } from 'drizzle-orm';
 import { type Database, DB, one } from '../database/database.module';
-import { type ManagerRow, managers } from '../database/schema';
+import { type ManagerRow, managers } from '../managers/managers.schema';
 
 /** Contenu du JWT de session : seulement l'id du manager. */
 interface SessionToken {

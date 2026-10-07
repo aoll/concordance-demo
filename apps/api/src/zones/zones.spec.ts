@@ -1,9 +1,10 @@
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { seedDatabase } from '../database/migrate';
-import { managers, zones as zonesTable } from '../database/schema';
 import { SEED_ZONES } from '../database/seed-zones';
+import { managers } from '../managers/managers.schema';
 import { createTestApp, resetDatabase, type TestApp } from '../test/test-app';
+import { zones as zonesTable } from './zones.schema';
 
 describe('zones et santé (lot 1)', () => {
   let t: TestApp;

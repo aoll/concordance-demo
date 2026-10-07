@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { UnauthenticatedError } from '../common/errors';
-import type { ManagerRow } from '../database/schema';
+import type { ManagerRow } from '../managers/managers.schema';
 import { AuthService } from './auth.service';
 
 export const SESSION_COOKIE = 'concordance_session';

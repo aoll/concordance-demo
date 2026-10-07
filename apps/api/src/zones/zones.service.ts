@@ -1,10 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { asc, eq, isNull } from 'drizzle-orm';
 import { NotFoundError } from '../common/errors';
-import { toManager } from '../common/manager.mapper';
 import { type Database, DB, one } from '../database/database.module';
-import { managers, presences, type ZoneRow, zones } from '../database/schema';
+import { toManager } from '../managers/manager.mapper';
+import { managers } from '../managers/managers.schema';
+import { presences } from '../presences/presences.schema';
 import type { ZoneOccupancyDto } from './zones.dto';
+import { type ZoneRow, zones } from './zones.schema';
 
 @Injectable()
 export class ZonesService {

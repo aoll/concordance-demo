@@ -8,9 +8,9 @@ import {
 import type { Response } from 'express';
 import { ZodResponse } from 'nestjs-zod';
 import { ErrorResponseDto } from '../common/error.dto';
-import { toManager } from '../common/manager.mapper';
 import { APP_CONFIG, type AppConfig } from '../config';
-import type { ManagerRow } from '../database/schema';
+import { toManager } from '../managers/manager.mapper';
+import type { ManagerRow } from '../managers/managers.schema';
 import { LoginDto, SessionDto } from './auth.dto';
 import { AuthGuard, CurrentManager, SESSION_COOKIE } from './auth.guard';
 import { AuthService } from './auth.service';
