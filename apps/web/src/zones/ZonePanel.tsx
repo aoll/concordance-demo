@@ -1,4 +1,5 @@
 import type { Manager, Presence, ZoneOccupancy } from '@concordance/api-client';
+import type { ReactNode } from 'react';
 import { fillOf } from './fill';
 
 interface ZonePanelProps {
@@ -10,6 +11,7 @@ interface ZonePanelProps {
   error: string | undefined;
   onJoin: () => void;
   onEnd: () => void;
+  children?: ReactNode;
 }
 
 /** Détail d'une zone : remplissage, managers présents et action d'inscription. */
@@ -22,6 +24,7 @@ export function ZonePanel({
   error,
   onJoin,
   onEnd,
+  children,
 }: ZonePanelProps) {
   const fill = fillOf(zone);
   const percent = Math.min(100, Math.round((zone.occupied / zone.capacity) * 100));
@@ -86,6 +89,7 @@ export function ZonePanel({
           {error}
         </p>
       )}
+      {children}
     </aside>
   );
 }

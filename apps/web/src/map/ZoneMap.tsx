@@ -7,13 +7,15 @@ interface ZoneMapProps {
   zones: ZoneOccupancy[];
   selected: ZoneSlug | undefined;
   onSelect: (slug: ZoneSlug) => void;
+  /** Zones qui viennent de changer en temps réel : un bref flash attire l'œil. */
+  flashing?: ReadonlySet<ZoneSlug>;
 }
 
 /**
  * Carte SVG de la maquette. Ordre des calques : fond, lignes RER, gares, puis les zones
  * au-dessus des lignes pour rester cliquables, et enfin les étiquettes.
  */
-export function ZoneMap({ zones, selected, onSelect }: ZoneMapProps) {
+export function ZoneMap({ zones, selected, onSelect, flashing }: ZoneMapProps) {
   return (
     // biome-ignore lint/a11y/useSemanticElements: un <svg> ne peut pas être un <fieldset>.
     <svg
@@ -88,7 +90,7 @@ export function ZoneMap({ zones, selected, onSelect }: ZoneMapProps) {
           <g
             key={zone.id}
             id={zone.slug}
-            className={`zone fill-${fill.key}${isSelected ? ' sel' : ''}`}
+            className={`zone fill-${fill.key}${isSelected ? ' sel' : ''}${flashing?.has(zone.slug) ? ' flash' : ''}`}
             role="button"
             tabIndex={0}
             aria-pressed={isSelected}

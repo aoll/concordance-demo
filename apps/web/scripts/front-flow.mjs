@@ -94,24 +94,29 @@ async function run(name, device) {
   await page.locator('.shift').waitFor({ state: 'detached' });
   check('fin de shift : Orly revient à 0/3 et le bandeau disparaît', true);
 
-  // Course perdue : Saint-Denis semble libre (1/4 en cache) mais d'autres l'ont remplie.
+  // Course perdue : d'autres managers prennent les places de Saint-Denis pendant notre requête
+  // (600 ms). Le temps réel montre leurs arrivées, l'API répond 409 ZONE_FULL, rollback.
   // On attend d'abord la resynchronisation de la fin de shift (bouton réactivé).
   const joinButton = panel.getByRole('button', { name: "Je m'inscris ici" });
   await page.waitForFunction(() => {
     const button = [...document.querySelectorAll('aside.panel button')].at(-1);
     return button && !button.disabled;
   });
+  check('Saint-Denis à 1/4 avant la course', (await count('saint-denis').textContent()) === '1/4');
+  await joinButton.click();
+  await count('saint-denis').getByText('2/4').waitFor({ timeout: 300 });
+  check('optimiste : 2/4 affiché avant la réponse', true);
   await page.evaluate(() => {
     for (const who of ['Rachid A.', 'Camille J.', 'Lucas H.']) {
       window.concordanceMocks?.occupy('saint-denis', who);
     }
   });
-  check('cache encore à 1/4 (staleTime)', (await count('saint-denis').textContent()) === '1/4');
-  await joinButton.click();
-  await count('saint-denis').getByText('2/4').waitFor({ timeout: 300 });
-  check('optimiste : 2/4 affiché avant la réponse', true);
   await panel.getByRole('alert').getByText("vient d'être complétée").waitFor();
   check('409 ZONE_FULL : message clair', true);
+  check(
+    "fil d'activité : l'arrivée des autres managers est affichée",
+    await panel.getByText('Lucas H. a rejoint Saint-Denis').isVisible(),
+  );
   await count('saint-denis').getByText('4/4').waitFor();
   check(
     'rollback puis resynchronisation : Saint-Denis 4/4, pas de shift',

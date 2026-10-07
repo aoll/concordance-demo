@@ -19,3 +19,6 @@ apps/web/pwa-proof/
 
 # Captures de preuve des lots 2 et 4 (scripts/front-flow.mjs)
 apps/web/front-proof/
+
+# Captures de preuve du lot 5 (scripts/live-two-browsers.mjs)
+apps/web/live-proof/

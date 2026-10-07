@@ -3,6 +3,12 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Même origine pour l'API et la socket temps réel (socket.io sur /socket.io, en WebSocket).
+const proxy = {
+  '/api': 'http://localhost:3000',
+  '/socket.io': { target: 'http://localhost:3000', ws: true },
+};
+
 export default defineConfig({
   plugins: [
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
@@ -62,10 +68,10 @@ export default defineConfig({
   server: {
     port: 5173,
     // Même origine pour le front et l'API : le cookie de session passe sans CORS.
-    proxy: { '/api': 'http://localhost:3000' },
+    proxy,
   },
   preview: {
     port: 4173,
-    proxy: { '/api': 'http://localhost:3000' },
+    proxy,
   },
 });

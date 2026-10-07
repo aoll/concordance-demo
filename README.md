@@ -15,8 +15,10 @@ pnpm dev          # Postgres (Docker) + API (:3000) + front (:5173) + régénér
 - API : http://localhost:3000/api, Swagger : http://localhost:3000/docs
 - Santé : http://localhost:3000/health (vérifie la base ; hors contrat)
 - Front sur le faux back MSW, sans API : `pnpm --filter @concordance/web dev:mocks`
-  (écritures ralenties de 600 ms pour voir l'optimisme ; `window.concordanceMocks.occupy('orly', 'Léa')` simule un autre manager)
+  (écritures ralenties de 600 ms pour voir l'optimisme ; `window.concordanceMocks.occupy('orly', 'Léa')` et `.release('orly', 'Léa')` simulent un autre manager, en direct sur la carte)
 - Preuve du parcours front (téléphone et tablette, captures dans `apps/web/front-proof`) : `pnpm --filter @concordance/web proof:front`
+- Preuve du temps réel, deux navigateurs sur la vraie API (après `pnpm db:up && pnpm build`, captures dans `apps/web/live-proof`) : `pnpm --filter @concordance/web proof:live`
+- Temps réel : la gateway socket.io de l'API (même port, `/socket.io`) diffuse `zone.occupancy.updated` après chaque inscription ou fin de shift ; le contrat de l'événement est un schéma Zod de `packages/contracts`, partagé par l'API et le front
 
 Au démarrage, l'API joue les migrations et le seed (idempotents) : les 6 zones de la carte et une quinzaine de managers en shift, comme dans la maquette (La Défense est pleine, Orly vide). Pour repartir d'une base vide : `pnpm db:down && docker volume rm concordance-demo_db-data`.
 

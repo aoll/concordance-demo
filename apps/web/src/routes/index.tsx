@@ -2,6 +2,8 @@ import { type Manager, useListZones } from '@concordance/api-client';
 import { ZoneSlugSchema } from '@concordance/contracts';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { z } from 'zod';
+import { LiveBadge, LiveFeed } from '../live/LiveFeed';
+import { useLiveZones } from '../live/useLiveZones';
 import { ZoneMap } from '../map/ZoneMap';
 import { useSession } from '../session/useSession';
 import { isOptimistic } from '../shift/cache';
@@ -27,6 +29,7 @@ function ZonesScreen({ me }: { me: Manager }) {
   const zones = useListZones({ query: { staleTime: 30_000 } });
   const shift = useMyShift(me);
   const { join, end } = useShiftMutations(me);
+  const live = useLiveZones(me);
   const { zone: selectedSlug } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
 
@@ -64,6 +67,7 @@ function ZonesScreen({ me }: { me: Manager }) {
           <ZoneMap
             zones={zones.data}
             selected={selected?.slug}
+            flashing={live.flashing}
             onSelect={(zone) => {
               join.reset();
               end.reset();
@@ -77,6 +81,7 @@ function ZonesScreen({ me }: { me: Manager }) {
                 {fillLabel(key)}
               </span>
             ))}
+            <LiveBadge status={live.status} />
           </div>
         </div>
         {selected && (
@@ -89,7 +94,9 @@ function ZonesScreen({ me }: { me: Manager }) {
             error={error}
             onJoin={() => join.mutate({ data: { zoneId: selected.id } })}
             onEnd={endShift}
-          />
+          >
+            <LiveFeed entries={live.feed} />
+          </ZonePanel>
         )}
       </div>
     </>

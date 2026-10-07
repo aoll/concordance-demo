@@ -1,4 +1,4 @@
-import { ZONES } from '@concordance/contracts';
+import { ZONES, type ZoneOccupancyUpdated } from '@concordance/contracts';
 import { delay, HttpResponse } from 'msw';
 import {
   getGetSessionMockHandler,
@@ -27,8 +27,15 @@ export * from './generated/endpoints/zones/zones.msw';
  * fin de shift réservée à son auteur.
  *
  * `latency` retarde les écritures pour rendre visible la mise à jour optimiste du front.
+ * `onEvent` reçoit les événements temps réel qu'émettrait la gateway (zone.occupancy.updated).
  */
-export function createMockApi({ latency = 0 }: { latency?: number } = {}) {
+export function createMockApi({
+  latency = 0,
+  onEvent,
+}: {
+  latency?: number;
+  onEvent?: (event: ZoneOccupancyUpdated) => void;
+} = {}) {
   const uuid = () => crypto.randomUUID();
   const zones = ZONES.map((zone) => ({ ...zone, id: uuid() }));
   const managers = new Map<string, Manager>();
@@ -52,6 +59,12 @@ export function createMockApi({ latency = 0 }: { latency?: number } = {}) {
       managers: here.flatMap((presence) => managers.get(presence.managerId) ?? []),
     };
   };
+  const emit = (kind: 'joined' | 'left', manager: Manager, zoneId: string) => {
+    const zone = zones.find((candidate) => candidate.id === zoneId);
+    if (zone && onEvent) {
+      onEvent({ zone: occupancy(zone), change: { kind, manager }, at: new Date().toISOString() });
+    }
+  };
   const join = (manager: Manager, zoneId: string): Presence => {
     const zone = zones.find((candidate) => candidate.id === zoneId);
     if (!zone) return fail(404, 'NOT_FOUND', 'Zone inconnue.');
@@ -69,7 +82,15 @@ export function createMockApi({ latency = 0 }: { latency?: number } = {}) {
       endedAt: null,
     };
     presences = [...presences, presence];
+    emit('joined', manager, zone.id);
     return presence;
+  };
+  const leave = (presence: Presence): Presence => {
+    const ended = { ...presence, endedAt: new Date().toISOString() };
+    presences = presences.map((candidate) => (candidate.id === ended.id ? ended : candidate));
+    const manager = managers.get(presence.managerId);
+    if (manager) emit('left', manager, presence.zoneId);
+    return ended;
   };
 
   // Occupation de départ, reprise de la maquette.
@@ -131,9 +152,7 @@ export function createMockApi({ latency = 0 }: { latency?: number } = {}) {
       }
       if (presence.endedAt)
         return fail(409, 'PRESENCE_ALREADY_ENDED', 'Ce shift est déjà terminé.');
-      const ended = { ...presence, endedAt: new Date().toISOString() };
-      presences = presences.map((candidate) => (candidate.id === ended.id ? ended : candidate));
-      return ended;
+      return leave(presence);
     }),
   ];
 
@@ -150,5 +169,17 @@ export function createMockApi({ latency = 0 }: { latency?: number } = {}) {
     }
   };
 
-  return { handlers, zones, occupy };
+  /** Fin de shift d'un autre manager, comme dans un second navigateur. */
+  const release = (slug: string, displayName: string): Presence => {
+    const zone = zones.find((candidate) => candidate.slug === slug);
+    const presence = active().find(
+      (candidate) =>
+        candidate.zoneId === zone?.id &&
+        managers.get(candidate.managerId)?.displayName === displayName,
+    );
+    if (!presence) throw new Error(`${displayName} n'est pas en shift sur ${slug}`);
+    return leave(presence);
+  };
+
+  return { handlers, zones, occupy, release };
 }
