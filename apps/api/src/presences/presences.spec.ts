@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createTestApp, login, resetDatabase, type TestApp } from '../test/test-app';
 
-describe('présences (lot 3b)', () => {
+describe('presences (lot 3b)', () => {
   let t: TestApp;
   let zoneByName: Map<string, { id: string; capacity: number }>;
 
@@ -27,7 +27,7 @@ describe('présences (lot 3b)', () => {
 
   afterAll(() => t.app.close());
 
-  it('401 sans session sur toutes les routes de présence', async () => {
+  it('returns 401 without a session on all presence routes', async () => {
     await t.http().get('/api/presences').expect(401);
     await t
       .http()
@@ -36,7 +36,7 @@ describe('présences (lot 3b)', () => {
       .expect(401);
   });
 
-  it('valide le corps une fois connecté (400)', async () => {
+  it('validates the body once logged in (400)', async () => {
     const { cookie } = await login(t.http, 'Alex');
     await t.http().post('/api/presences').set('Cookie', cookie).send({ zoneId: 'x' }).expect(400);
     await t
@@ -47,7 +47,7 @@ describe('présences (lot 3b)', () => {
       .expect(400);
   });
 
-  it('inscription : 201, la zone compte le manager, puis 409 ALREADY_PRESENT', async () => {
+  it('check-in: 201, the zone counts the manager, then 409 ALREADY_PRESENT', async () => {
     const { manager, cookie } = await login(t.http, 'Alex');
     const created = await t
       .http()
@@ -78,7 +78,7 @@ describe('présences (lot 3b)', () => {
     expect(again.body).toMatchObject({ statusCode: 409, code: 'ALREADY_PRESENT' });
   });
 
-  it('zone pleine : 409 ZONE_FULL', async () => {
+  it('full zone: 409 ZONE_FULL', async () => {
     for (const name of ['A1', 'A2', 'A3']) {
       const { cookie } = await login(t.http, name);
       await t
@@ -98,7 +98,7 @@ describe('présences (lot 3b)', () => {
     expect(full.body).toMatchObject({ code: 'ZONE_FULL' });
   });
 
-  it('zone inconnue : 404 NOT_FOUND', async () => {
+  it('unknown zone: 404 NOT_FOUND', async () => {
     const { cookie } = await login(t.http, 'Alex');
     const response = await t
       .http()
@@ -109,7 +109,7 @@ describe('présences (lot 3b)', () => {
     expect(response.body).toMatchObject({ code: 'NOT_FOUND' });
   });
 
-  it("fin de shift : 403 pour un autre manager, 200 pour l'auteur, puis 409", async () => {
+  it('end of shift: 403 for another manager, 200 for the owner, then 409', async () => {
     const alex = await login(t.http, 'Alex');
     const sam = await login(t.http, 'Sam');
     const { body: presence } = await t
@@ -154,7 +154,7 @@ describe('présences (lot 3b)', () => {
       .expect(201);
   });
 
-  it('GET /api/presences filtre par manager, zone et état', async () => {
+  it('GET /api/presences filters by manager, zone and status', async () => {
     const alex = await login(t.http, 'Alex');
     const sam = await login(t.http, 'Sam');
     const join = (cookie: string, zoneName: string) =>
