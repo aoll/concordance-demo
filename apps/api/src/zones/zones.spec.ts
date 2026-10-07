@@ -22,6 +22,13 @@ describe('zones et santé (lot 1)', () => {
     expect(response.body.info).toEqual({ database: { status: 'up' } });
   });
 
+  it('pose les en-têtes de sécurité (helmet) et masque Express', async () => {
+    const response = await t.http().get('/api/zones').expect(200);
+    expect(response.headers['x-powered-by']).toBeUndefined();
+    expect(response.headers['x-content-type-options']).toBe('nosniff');
+    expect(response.headers['content-security-policy']).toContain("default-src 'self'");
+  });
+
   it("GET /api/zones renvoie les zones de la base, dans leur ordre, avec l'occupation du seed", async () => {
     const response = await t.http().get('/api/zones').expect(200);
     const zones = response.body as Array<{

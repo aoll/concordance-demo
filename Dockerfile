@@ -13,6 +13,8 @@ WORKDIR /app
 ENV NODE_ENV=production \
     WEB_DIST_DIR=/app/apps/web/dist
 COPY --from=build /app /app
+# Pas de root à l'exécution : l'utilisateur node de l'image officielle, en lecture seule sur /app.
+USER node
 EXPOSE 3000
 # Migrations et seed idempotents au démarrage de l'API (voir main.ts).
 CMD ["node", "apps/api/dist/main.js"]

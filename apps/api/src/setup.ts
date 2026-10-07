@@ -1,6 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, type OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 export const API_PREFIX = 'api';
@@ -9,6 +10,8 @@ export const API_PREFIX = 'api';
 export function configureApp(app: INestApplication): OpenAPIObject {
   // /health reste hors préfixe : c'est une sonde d'infra, pas une route du contrat.
   app.setGlobalPrefix(API_PREFIX, { exclude: ['health'] });
+  // En-têtes de sécurité par défaut (CSP same-origin, nosniff, HSTS, pas de X-Powered-By).
+  app.use(helmet());
   app.use(cookieParser());
   const config = new DocumentBuilder()
     .setTitle('Concordance démo')
