@@ -1,4 +1,4 @@
-import type { zones } from './schema';
+import type { zones } from '../zones/zones.schema';
 
 /**
  * Zones de départ, reprises de la maquette (plan schématique, viewBox 800 × 600).

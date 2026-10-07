@@ -1,7 +1,7 @@
 import { ZoneShapeSchema } from '@concordance/contracts';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { ManagerSchema } from '../common/manager.dto';
+import { ManagerSchema } from '../managers/manager.dto';
 
 export const ZoneOccupancySchema = z.object({
   id: z.uuid(),

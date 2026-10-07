@@ -77,7 +77,7 @@ Renommer `startedAt` en `startTime` dans `apps/api/src/presences/presences.dto.t
 
 ## Règles métier garanties en base
 
-Schéma dans `apps/api/src/database/schema.ts`, migrations versionnées dans `apps/api/drizzle/`.
+Chaque table vit dans son module (`managers/managers.schema.ts`, `zones/zones.schema.ts`, `presences/presences.schema.ts`), réunies par `apps/api/src/database/schema.ts` ; migrations versionnées dans `apps/api/drizzle/`.
 
 1. **Un manager dans au plus une zone** : index unique partiel `presences(manager_id) WHERE ended_at IS NULL`.
 2. **Une zone ne dépasse jamais sa capacité** : l'inscription est une transaction qui verrouille la ligne de la zone (`SELECT … FOR UPDATE`), compte les présences actives, puis insère. Deux inscriptions sur la même zone passent l'une après l'autre. Le test `presences.concurrency.spec.ts` lance 30 inscriptions simultanées sur une zone de capacité 3 et vérifie qu'il en passe exactement 3 ; sans le verrou, il en passe 4 à 6.

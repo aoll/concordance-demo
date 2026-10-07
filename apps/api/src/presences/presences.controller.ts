@@ -20,7 +20,7 @@ import {
 import { ZodResponse } from 'nestjs-zod';
 import { AuthGuard, CurrentManager } from '../auth/auth.guard';
 import { ErrorResponseDto } from '../common/error.dto';
-import type { ManagerRow } from '../database/schema';
+import type { ManagerRow } from '../managers/managers.schema';
 import {
   CreatePresenceDto,
   ListPresencesQueryDto,

@@ -8,10 +8,12 @@ import {
   ZoneFullError,
 } from '../common/errors';
 import { type Database, DB, one } from '../database/database.module';
-import { type ManagerRow, type PresenceRow, presences, zones } from '../database/schema';
+import type { ManagerRow } from '../managers/managers.schema';
+import { zones } from '../zones/zones.schema';
 import { ZonesService } from '../zones/zones.service';
 import { PresenceGateway } from './presence.gateway';
 import type { ListPresencesQueryDto, PresenceDto } from './presences.dto';
+import { type PresenceRow, presences } from './presences.schema';
 
 const ONE_ACTIVE_PER_MANAGER = 'presences_one_active_per_manager';
 
