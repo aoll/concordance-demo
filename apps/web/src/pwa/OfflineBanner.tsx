@@ -1,4 +1,6 @@
+import { WifiOff } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 function subscribe(onChange: () => void) {
   window.addEventListener('online', onChange);
@@ -21,21 +23,14 @@ export function OfflineBanner() {
   const online = useOnline();
   if (online) return null;
   return (
-    <div
+    <Alert
       role="status"
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000,
-        padding: '8px 16px',
-        paddingTop: 'max(8px, env(safe-area-inset-top))',
-        background: '#5c4400',
-        color: '#fff',
-        font: '500 14px system-ui, sans-serif',
-        textAlign: 'center',
-      }}
+      className="sticky top-0 z-[1000] justify-center rounded-none border-0 bg-[#5c4400] pt-[max(8px,env(safe-area-inset-top))] pb-2 text-white"
     >
-      Hors ligne : dernière occupation connue affichée.
-    </div>
+      <WifiOff />
+      <AlertDescription className="text-white">
+        Hors ligne : dernière occupation connue affichée.
+      </AlertDescription>
+    </Alert>
   );
 }

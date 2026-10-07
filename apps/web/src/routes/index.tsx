@@ -3,6 +3,8 @@ import { type ZoneSlug, ZoneSlugSchema } from '@concordance/contracts';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback, useState } from 'react';
 import { z } from 'zod';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 import { LiveBadge, LiveFeed } from '../live/LiveFeed';
 import { useLiveZones } from '../live/useLiveZones';
 import { ZoneMap } from '../map/ZoneMap';
@@ -49,11 +51,11 @@ function ZonesScreen({ me }: { me: Manager }) {
   // Des données (même restaurées hors ligne) priment sur une erreur de refetch.
   if (!zones.data) {
     return zones.isError ? (
-      <p className="err page-error" role="alert">
-        Impossible de charger les zones.
-      </p>
+      <Alert variant="destructive" className="m-4 w-auto">
+        <AlertDescription>Impossible de charger les zones.</AlertDescription>
+      </Alert>
     ) : (
-      <p className="loading">Chargement des zones…</p>
+      <p className="text-muted-foreground px-4 py-6">Chargement des zones…</p>
     );
   }
 
@@ -89,10 +91,10 @@ function ZonesScreen({ me }: { me: Manager }) {
             flashing={live.flashing}
             onSelect={select}
           />
-          <div className="legend">
+          <div className="text-muted-foreground flex flex-wrap items-center gap-3 px-1 pt-2 text-xs">
             {FILL_KEYS.map((key) => (
-              <span key={key}>
-                <i className={`sw fill-${key}`} />
+              <span key={key} className="inline-flex items-center gap-1.5">
+                <i className={cn('bg-fill size-3 rounded-[3px]', `fill-${key}`)} />
                 {fillLabel(key)}
               </span>
             ))}
