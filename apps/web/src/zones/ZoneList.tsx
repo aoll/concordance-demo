@@ -1,5 +1,5 @@
 import type { ZoneOccupancy } from '@concordance/api-client';
-import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import { fillOf } from './fill';
 
@@ -13,30 +13,30 @@ interface ZoneListProps {
 /** Liste des zones de la bottom sheet (téléphone) : un autre chemin que la carte pour choisir. */
 export function ZoneList({ zones, selected, onSelect }: ZoneListProps) {
   return (
-    <nav
-      className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none] min-[720px]:hidden"
+    <ToggleGroup
+      type="single"
+      variant="outline"
+      size="sm"
+      value={selected ?? ''}
+      // Une zone reste toujours sélectionnée : un second toucher sur la même ne la désélectionne pas.
+      onValueChange={(zoneId) => zoneId && onSelect(zoneId)}
       aria-label="Zones"
+      className="-mx-4 w-auto gap-2 overflow-x-auto px-4 pb-0.5 shadow-none [scrollbar-width:none] min-[720px]:hidden"
     >
       {zones.map((zone) => (
-        <Button
+        <ToggleGroupItem
           key={zone.id}
-          variant="outline"
-          size="sm"
-          className={cn(
-            'h-9 flex-none rounded-full font-semibold',
-            zone.id === selected && 'border-primary ring-primary ring-1 ring-inset',
-          )}
-          aria-pressed={zone.id === selected}
+          value={zone.id}
           data-testid={`zone-item-${zone.name}`}
-          onClick={() => onSelect(zone.id)}
+          className="data-[state=on]:border-primary data-[state=on]:ring-primary h-9 flex-none rounded-full! border px-3 font-semibold data-[state=on]:bg-transparent data-[state=on]:ring-1 data-[state=on]:ring-inset"
         >
-          <i className={cn('bg-fill size-3 rounded-[3px]', `fill-${fillOf(zone).key}`)} />
-          <span>{zone.name}</span>
-          <b className="text-muted-foreground font-mono text-xs font-medium">
+          <span className={cn('bg-fill size-3 rounded-[3px]', `fill-${fillOf(zone).key}`)} />
+          {zone.name}
+          <span className="text-muted-foreground font-mono text-xs font-medium">
             {zone.occupied}/{zone.capacity}
-          </b>
-        </Button>
+          </span>
+        </ToggleGroupItem>
       ))}
-    </nav>
+    </ToggleGroup>
   );
 }

@@ -202,7 +202,8 @@ async function run(name, device) {
   await shot('4-zone-pleine');
 
   // Déconnexion : retour à l'écran de connexion, cache hors ligne vidé.
-  await page.getByRole('button', { name: /Déconnecter/ }).click();
+  await page.getByRole('button', { name: /^Compte de / }).click();
+  await page.getByRole('menuitem', { name: /Se déconnecter/ }).click();
   await page.getByRole('heading', { name: 'Bienvenue' }).waitFor();
   check('déconnexion : retour à la connexion', true);
   await context.close();
