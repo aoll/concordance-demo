@@ -96,7 +96,7 @@ L'inscription elle-même est optimiste : la carte bouge avant la réponse, et un
 ## PWA et hors ligne
 
 - `vite-plugin-pwa` (Workbox) : manifest, icônes, shell précaché, `/api` en network-first (la dernière réponse connue sert si le réseau ne répond pas en 3 s).
-- Le cache TanStack Query est persisté dans IndexedDB : l'app rouvre en mode avion avec la dernière occupation connue et un bandeau « Hors ligne ». La déconnexion purge ce cache.
+- Le cache TanStack Query est persisté dans IndexedDB : l'app rouvre en mode avion avec la dernière occupation connue et un bandeau « Hors ligne ». En ligne, le cache restauré est revalidé aussitôt. La déconnexion purge ce cache.
 
 ## Identité
 
