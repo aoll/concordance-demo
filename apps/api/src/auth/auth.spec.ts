@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createTestApp, login, resetDatabase, type TestApp } from '../test/test-app';
 
-describe('auth par pseudo (lot 3a)', () => {
+describe('nickname auth (lot 3a)', () => {
   let t: TestApp;
 
   beforeAll(async () => {
@@ -11,7 +11,7 @@ describe('auth par pseudo (lot 3a)', () => {
 
   afterAll(() => t.app.close());
 
-  it('pose un cookie httpOnly et crée le manager au premier passage seulement', async () => {
+  it('sets an httpOnly cookie and creates the manager on first visit only', async () => {
     const response = await t.http().post('/api/auth/login').send({ displayName: 'Alex' });
     expect(response.status).toBe(200);
     expect(String(response.headers['set-cookie'])).toMatch(/concordance_session=.+HttpOnly/);
@@ -19,13 +19,13 @@ describe('auth par pseudo (lot 3a)', () => {
     expect(again.manager).toEqual(response.body.manager);
   });
 
-  it('GET /api/auth/session renvoie le manager du cookie', async () => {
+  it('GET /api/auth/session returns the manager from the cookie', async () => {
     const { manager, cookie } = await login(t.http, 'Alex');
     const response = await t.http().get('/api/auth/session').set('Cookie', cookie).expect(200);
     expect(response.body).toEqual({ manager });
   });
 
-  it('401 UNAUTHENTICATED sans cookie ou avec un jeton invalide', async () => {
+  it('401 UNAUTHENTICATED without a cookie or with an invalid token', async () => {
     const none = await t.http().get('/api/auth/session').expect(401);
     expect(none.body).toEqual({
       statusCode: 401,
@@ -35,7 +35,7 @@ describe('auth par pseudo (lot 3a)', () => {
     await t.http().get('/api/auth/session').set('Cookie', 'concordance_session=faux').expect(401);
   });
 
-  it('POST /api/auth/logout efface le cookie', async () => {
+  it('POST /api/auth/logout clears the cookie', async () => {
     const response = await t.http().post('/api/auth/logout').expect(204);
     expect(String(response.headers['set-cookie'])).toMatch(/concordance_session=;/);
   });
