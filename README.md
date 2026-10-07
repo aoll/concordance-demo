@@ -13,13 +13,37 @@ pnpm dev          # Postgres (Docker) + API (:3000) + front (:5173) + régénér
 
 - Front : http://localhost:5173 (le proxy Vite envoie `/api` vers l'API)
 - API : http://localhost:3000/api, Swagger : http://localhost:3000/docs
+- Santé : http://localhost:3000/health (vérifie la base ; hors contrat)
 - Front sur le faux back MSW, sans API : `pnpm --filter @concordance/web dev:mocks`
+
+Au démarrage, l'API joue les migrations et le seed (idempotents) : les 6 zones de la carte et une quinzaine de managers en shift, comme dans la maquette (La Défense est pleine, Orly vide). Pour repartir d'une base vide : `pnpm db:down && docker volume rm concordance-demo_db-data`.
 
 ## Vérifier (la « CI » est locale)
 
 ```bash
-pnpm check        # Biome, puis typecheck, tests et build de tous les paquets (Turborepo)
+pnpm check        # Biome, Postgres (Docker), puis typecheck, tests et build de tous les paquets
 ```
+
+Les tests de l'API tournent sur une vraie base Postgres (`concordance_test`, recréée à chaque run sur le conteneur du docker compose), parce que les règles métier vivent en base : le verrou de capacité et l'index unique partiel ne se testent pas avec un mock.
+
+## Base de données
+
+Drizzle + PostgreSQL. Schéma dans `apps/api/src/database/schema.ts`, migrations SQL versionnées dans `apps/api/drizzle/` (`pnpm --filter @concordance/api db:generate` après un changement de schéma).
+
+- `managers` : `display_name` unique, et des champs internes (email, matricule, téléphone) qui ne sortent jamais de l'API.
+- `zones` : `slug` = id du `<path>` de la carte, `capacity > 0`.
+- `presences` : `ended_at` null tant que le shift est en cours.
+
+Les deux règles de la proposition sont garanties par Postgres :
+
+1. **Un manager dans au plus une zone** : index unique partiel `presences(manager_id) WHERE ended_at IS NULL`.
+2. **Une zone ne dépasse jamais sa capacité** : l'inscription est une transaction qui verrouille la ligne de la zone (`SELECT … FOR UPDATE`), compte les présences actives, puis insère. Deux inscriptions sur la même zone passent donc l'une après l'autre. Le test `presences.concurrency.spec.ts` lance 30 inscriptions simultanées sur une zone de capacité 3 et vérifie qu'il y en a exactement 3 ; sans le verrou, il en passe 4 à 6.
+
+La connexion est paresseuse (le pool `pg` ne se connecte qu'à la première requête) : `pnpm generate` exporte le contrat sans base.
+
+## Identité
+
+Pas de vraie auth : `POST /api/auth/login { displayName }` crée le manager au premier passage et pose un cookie httpOnly `concordance_session` (JWT signé, 12 h). `AuthGuard` le lit et `@CurrentManager()` injecte le manager. La cible serait le SSO RATP (OIDC).
 
 ## Structure
 
