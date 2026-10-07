@@ -14,7 +14,8 @@
     "generate": "tsr generate",
     "proof:pwa": "node scripts/pwa-offline.mjs",
     "proof:front": "node scripts/front-flow.mjs",
-    "proof:live": "node scripts/live-two-browsers.mjs"
+    "proof:live": "node scripts/live-two-browsers.mjs",
+    "proof:deploy": "node scripts/deploy-smoke.mjs"
   },
   "dependencies": {
     "@concordance/api-client": "workspace:*",

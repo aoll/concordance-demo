@@ -120,6 +120,18 @@ Trois scripts Playwright rejouent les parcours et prennent des captures (Chromiu
 | `proof:live` | Deux navigateurs sur la vraie API se mettent à jour sans recharger (après `pnpm db:up && pnpm build`) |
 | `proof:pwa` | L'app rouvre hors ligne avec la dernière occupation (après `pnpm --filter @concordance/web build`) |
 
+## Déploiement (Railway)
+
+Une seule image (`Dockerfile`) : l'API Nest sert aussi le build de la PWA (`WEB_DIST_DIR`). Le REST, la socket et le cookie de session restent sur la même origine, comme avec le proxy Vite en local : ni CORS ni cookie cross-site. Railway fournit le HTTPS exigé par le service worker.
+
+Le projet Railway contient un Postgres et le service `app`, construit depuis ce repo (`railway.json` : Dockerfile, sonde `/health`). Variables du service : `DATABASE_URL=${{Postgres.DATABASE_URL}}` et `JWT_SECRET` (l'API refuse de démarrer en production sans lui). Le port vient de `PORT`. Migrations et seed se jouent au démarrage.
+
+Avant un entretien, vérifier l'URL publique sur deux appareils simulés :
+
+```bash
+APP_URL=https://<domaine>.up.railway.app pnpm --filter @concordance/web proof:deploy
+```
+
 ## Contrat de l'API
 
 | Méthode | Route | Hook | Réponse |
