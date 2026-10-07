@@ -8,7 +8,7 @@ import { io, type Socket } from 'socket.io-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createTestApp, login, resetDatabase, type TestApp } from '../test/test-app';
 
-describe('temps réel (lot 5b)', () => {
+describe('real time (lot 5b)', () => {
   let t: TestApp;
   let socket: Socket<ServerToClientEvents>;
   let events: ZoneOccupancyUpdated[];
@@ -47,7 +47,7 @@ describe('temps réel (lot 5b)', () => {
 
   afterAll(() => t.app.close());
 
-  it("diffuse l'occupation après une inscription puis une fin de shift", async () => {
+  it('broadcasts occupancy after a sign-up then a shift end', async () => {
     const alex = await login(t.http, 'Alex');
     const { body: presence } = await t
       .http()
@@ -75,7 +75,7 @@ describe('temps réel (lot 5b)', () => {
     });
   });
 
-  it("n'émet rien quand l'inscription est refusée (zone pleine)", async () => {
+  it('emits nothing when the sign-up is refused (zone full)', async () => {
     for (const name of ['A1', 'A2', 'A3']) {
       const { cookie } = await login(t.http, name);
       await t.http().post('/api/presences').set('Cookie', cookie).send({ zoneId: orlyId });
@@ -93,7 +93,7 @@ describe('temps réel (lot 5b)', () => {
     expect(events.at(-1)?.zone.occupied).toBe(3);
   });
 
-  it("n'expose que les champs du contrat (pas d'email, de matricule…)", async () => {
+  it('only exposes the contract fields (no email, employee number...)', async () => {
     const { cookie } = await login(t.http, 'Alex');
     await t.http().post('/api/presences').set('Cookie', cookie).send({ zoneId: orlyId });
     const event = await nth(1);

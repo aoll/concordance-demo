@@ -8,7 +8,7 @@ import { presences } from './presences.schema';
  * yield exactly 3 presences. Requests go through HTTP, in parallel, and
  * the `pg` pool opens several connections: the transactions really overlap.
  */
-describe('capacité sous concurrence (lot 3b)', () => {
+describe('capacity under concurrency (lot 3b)', () => {
   const N = 30;
   let t: TestApp;
   let laDefense: { id: string; capacity: number };
@@ -41,7 +41,7 @@ describe('capacité sous concurrence (lot 3b)', () => {
 
   // Several rounds: a race won by luck once is not enough.
   it.each([1, 2, 3, 4, 5])(
-    `${N} managers s'inscrivent en même temps sur une zone de capacité 3 (tour %i)`,
+    `${N} managers sign up at the same time on a zone of capacity 3 (round %i)`,
     async () => {
       expect(laDefense.capacity).toBe(3);
       const sessions = await Promise.all(
@@ -64,7 +64,7 @@ describe('capacité sous concurrence (lot 3b)', () => {
     },
   );
 
-  it('un même manager sur les 6 zones en même temps : une seule présence active', async () => {
+  it('the same manager on all 6 zones at once: only one active presence', async () => {
     const { cookie, manager } = await login(t.http, 'Ubiquiste');
     const zones = (await t.http().get('/api/zones')).body as Array<{ id: string }>;
     const responses = await Promise.all(

@@ -6,7 +6,7 @@ import { managers } from '../managers/managers.schema';
 import { createTestApp, resetDatabase, type TestApp } from '../test/test-app';
 import { zones as zonesTable } from './zones.schema';
 
-describe('zones et santé (lot 1)', () => {
+describe('zones and health (lot 1)', () => {
   let t: TestApp;
 
   beforeAll(async () => {
@@ -17,19 +17,19 @@ describe('zones et santé (lot 1)', () => {
 
   afterAll(() => t.app.close());
 
-  it('GET /health vérifie la base, hors préfixe /api', async () => {
+  it('GET /health checks the database, outside the /api prefix', async () => {
     const response = await t.http().get('/health').expect(200);
     expect(response.body.info).toEqual({ database: { status: 'up' } });
   });
 
-  it('pose les en-têtes de sécurité (helmet) et masque Express', async () => {
+  it('sets the security headers (helmet) and hides Express', async () => {
     const response = await t.http().get('/api/zones').expect(200);
     expect(response.headers['x-powered-by']).toBeUndefined();
     expect(response.headers['x-content-type-options']).toBe('nosniff');
     expect(response.headers['content-security-policy']).toContain("default-src 'self'");
   });
 
-  it("GET /api/zones renvoie les zones de la base, dans leur ordre, avec l'occupation du seed", async () => {
+  it('GET /api/zones returns the zones from the database, in order, with the seed occupancy', async () => {
     const response = await t.http().get('/api/zones').expect(200);
     const zones = response.body as Array<{
       id: string;
@@ -53,7 +53,7 @@ describe('zones et santé (lot 1)', () => {
     ]);
   });
 
-  it('ne sort jamais les champs internes du manager', async () => {
+  it('never exposes the manager internal fields', async () => {
     const [karim] = await t.db.select().from(managers).where(eq(managers.displayName, 'Karim B.'));
     expect(karim?.email).toBeTruthy();
     const response = await t.http().get('/api/zones').expect(200);
@@ -63,7 +63,7 @@ describe('zones et santé (lot 1)', () => {
     expect(Object.keys(response.body[0].managers[0]).sort()).toEqual(['displayName', 'id']);
   });
 
-  it('GET /api/zones/:id : détail, ou 404 NOT_FOUND', async () => {
+  it('GET /api/zones/:id: detail, or 404 NOT_FOUND', async () => {
     const [first] = (await t.http().get('/api/zones')).body;
     const detail = await t.http().get(`/api/zones/${first.id}`).expect(200);
     expect(detail.body).toEqual(first);
@@ -74,14 +74,14 @@ describe('zones et santé (lot 1)', () => {
     expect(missing.body).toMatchObject({ statusCode: 404, code: 'NOT_FOUND' });
   });
 
-  it('le seed est idempotent', async () => {
+  it('the seed is idempotent', async () => {
     await seedDatabase(t.db);
     const response = await t.http().get('/api/zones').expect(200);
     expect(response.body).toHaveLength(6);
     expect(response.body[0].occupied).toBe(3);
   });
 
-  it('les zones vivent en base : une capacité modifiée est servie et survit au seed', async () => {
+  it('zones live in the database: a modified capacity is served and survives the seed', async () => {
     const orly = SEED_ZONES.find((zone) => zone.name === 'Orly');
     if (!orly) throw new Error('Orly absente du seed');
     await t.db.update(zonesTable).set({ capacity: 5 }).where(eq(zonesTable.id, orly.id));

@@ -11,7 +11,7 @@ import { configureApp } from './setup';
  * Task C contract: the routes and schemas the front end consumes via Orval.
  * Later lots replace the stubs (501) without changing these signatures.
  */
-describe('contrat API', () => {
+describe('API contract', () => {
   let app: INestApplication;
   let document: OpenAPIObject;
 
@@ -24,7 +24,7 @@ describe('contrat API', () => {
 
   afterAll(() => app.close());
 
-  it('expose les opérations attendues', () => {
+  it('exposes the expected operations', () => {
     const operations = Object.entries(document.paths).flatMap(([path, item]) =>
       Object.entries(item).map(
         ([method, operation]) =>
@@ -45,7 +45,7 @@ describe('contrat API', () => {
     );
   });
 
-  it('nomme les schémas sans suffixe technique', () => {
+  it('names schemas without a technical suffix', () => {
     expect(Object.keys(document.components?.schemas ?? {}).sort()).toEqual(
       [
         'CreatePresence',
@@ -60,12 +60,12 @@ describe('contrat API', () => {
     );
   });
 
-  it('ne publie que les champs publics du manager', () => {
+  it('only publishes the public manager fields', () => {
     const manager = document.components?.schemas?.Manager as { properties: object };
     expect(Object.keys(manager.properties).sort()).toEqual(['displayName', 'id']);
   });
 
-  it('valide les entrées avant le contrôleur (400), sans toucher à la base', async () => {
+  it('validates inputs before the controller (400), without touching the database', async () => {
     // Presence routes are behind the guard: their 400 is tested in presences.spec.ts.
     await request(app.getHttpServer())
       .post('/api/auth/login')
