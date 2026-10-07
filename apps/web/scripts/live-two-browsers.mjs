@@ -1,4 +1,4 @@
-// Preuve du lot 5 : deux navigateurs côte à côte sur la vraie API (Nest + Postgres), sans mocks.
+// Preuve du lot 5 : deux navigateurs côte à côte sur la vraie API (Nest + Postgres).
 // Ce que fait l'un apparaît chez l'autre sans recharger la page, et sans refetch de GET /zones :
 // l'événement socket.io est écrit directement dans le cache TanStack Query.
 // Prérequis : Postgres du docker compose (pnpm db:up) et l'API buildée (pnpm build).
@@ -39,6 +39,7 @@ const api = spawn('node', ['dist/main.js'], {
   env: {
     ...process.env,
     NODE_ENV: 'production',
+    JWT_SECRET: 'secret-de-preuve-locale',
     DATABASE_URL: `postgres://concordance:concordance@localhost:5432/${DB}`,
   },
 });
@@ -50,7 +51,6 @@ process.on('exit', () => {
 await waitFor(api, 'API prête', 'API');
 const vite = spawn('node_modules/.bin/vite', ['--port', String(PORT), '--strictPort'], {
   stdio: 'pipe',
-  env: { ...process.env, VITE_API_MOCKS: 'false' },
 });
 children.push(vite);
 await waitFor(vite, String(PORT), 'vite');

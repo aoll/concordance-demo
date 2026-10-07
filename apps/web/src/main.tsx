@@ -16,28 +16,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
-async function start() {
-  if (import.meta.env.VITE_API_MOCKS === 'true') {
-    // Faux back MSW généré depuis le contrat : le front avance sans l'API réelle.
-    const { worker } = await import('./mocks/browser');
-    await worker.start({ onUnhandledRequest: 'bypass' });
-  }
-  const root = document.getElementById('root');
-  if (!root) throw new Error('#root introuvable');
-  createRoot(root).render(
-    <StrictMode>
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={persistOptions}
-        // Le cache restauré peut retarder d'un événement (sauvegarde différée d'1 s, coupure) :
-        // on le revalide aussitôt, ce qui ne refetch qu'une fois et ne fait rien hors ligne.
-        onSuccess={() => queryClient.invalidateQueries()}
-      >
-        <OfflineBanner />
-        <RouterProvider router={router} />
-      </PersistQueryClientProvider>
-    </StrictMode>,
-  );
-}
-
-void start();
+const root = document.getElementById('root');
+if (!root) throw new Error('#root introuvable');
+createRoot(root).render(
+  <StrictMode>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={persistOptions}
+      // Le cache restauré peut retarder d'un événement (sauvegarde différée d'1 s, coupure) :
+      // on le revalide aussitôt, ce qui ne refetch qu'une fois et ne fait rien hors ligne.
+      onSuccess={() => queryClient.invalidateQueries()}
+    >
+      <OfflineBanner />
+      <RouterProvider router={router} />
+    </PersistQueryClientProvider>
+  </StrictMode>,
+);

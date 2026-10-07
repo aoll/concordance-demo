@@ -181,9 +181,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.1.2
         version: 6.1.2(vite@8.3.3(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
-      msw:
-        specifier: ^2.0.0
-        version: 2.15.0(@types/node@22.20.5)(typescript@5.9.3)
       playwright-core:
         specifier: ~1.56.1
         version: 1.56.1
@@ -211,12 +208,6 @@ importers:
       '@concordance/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@faker-js/faker':
-        specifier: ^10.6.0
-        version: 10.6.0
-      msw:
-        specifier: ^2.0.0
-        version: 2.15.0(@types/node@22.20.5)(typescript@5.9.3)
       zod:
         specifier: ^4.6.5
         version: 4.6.5
@@ -7062,7 +7053,8 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@faker-js/faker@10.6.0': {}
+  '@faker-js/faker@10.6.0':
+    optional: true
 
   '@fontsource/barlow-semi-condensed@5.3.0': {}
 
@@ -7179,7 +7171,8 @@ snapshots:
 
   '@inquirer/ansi@1.0.2': {}
 
-  '@inquirer/ansi@2.0.9': {}
+  '@inquirer/ansi@2.0.9':
+    optional: true
 
   '@inquirer/checkbox@4.3.2(@types/node@22.20.5)':
     dependencies:
@@ -7204,6 +7197,7 @@ snapshots:
       '@inquirer/type': 4.2.0(@types/node@22.20.5)
     optionalDependencies:
       '@types/node': 22.20.5
+    optional: true
 
   '@inquirer/core@10.3.2(@types/node@22.20.5)':
     dependencies:
@@ -7229,6 +7223,7 @@ snapshots:
       signal-exit: 4.1.0
     optionalDependencies:
       '@types/node': 22.20.5
+    optional: true
 
   '@inquirer/editor@4.2.23(@types/node@22.20.5)':
     dependencies:
@@ -7255,7 +7250,8 @@ snapshots:
 
   '@inquirer/figures@1.0.15': {}
 
-  '@inquirer/figures@2.0.9': {}
+  '@inquirer/figures@2.0.9':
+    optional: true
 
   '@inquirer/input@4.3.1(@types/node@22.20.5)':
     dependencies:
@@ -7343,6 +7339,7 @@ snapshots:
   '@inquirer/type@4.2.0(@types/node@22.20.5)':
     optionalDependencies:
       '@types/node': 22.20.5
+    optional: true
 
   '@isaacs/cliui@9.0.0': {}
 
@@ -7385,6 +7382,7 @@ snapshots:
       is-node-process: 1.2.0
       outvariant: 1.4.3
       strict-event-emitter: 0.5.1
+    optional: true
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     optional: true
@@ -7617,16 +7615,20 @@ snapshots:
 
   '@noble/hashes@1.8.0': {}
 
-  '@open-draft/deferred-promise@2.2.0': {}
+  '@open-draft/deferred-promise@2.2.0':
+    optional: true
 
-  '@open-draft/deferred-promise@3.0.0': {}
+  '@open-draft/deferred-promise@3.0.0':
+    optional: true
 
   '@open-draft/logger@0.3.0':
     dependencies:
       is-node-process: 1.2.0
       outvariant: 1.4.3
+    optional: true
 
-  '@open-draft/until@2.1.0': {}
+  '@open-draft/until@2.1.0':
+    optional: true
 
   '@orval/angular@8.40.0(@faker-js/faker@10.6.0)':
     dependencies:
@@ -8293,8 +8295,10 @@ snapshots:
   '@types/set-cookie-parser@2.4.10':
     dependencies:
       '@types/node': 22.20.5
+    optional: true
 
-  '@types/statuses@2.0.6': {}
+  '@types/statuses@2.0.6':
+    optional: true
 
   '@types/superagent@8.1.11':
     dependencies:
@@ -8918,7 +8922,8 @@ snapshots:
 
   cookie@0.7.2: {}
 
-  cookie@1.1.1: {}
+  cookie@1.1.1:
+    optional: true
 
   cookiejar@2.1.4: {}
 
@@ -9422,17 +9427,20 @@ snapshots:
 
   fast-safe-stringify@2.1.1: {}
 
-  fast-string-truncated-width@3.0.3: {}
+  fast-string-truncated-width@3.0.3:
+    optional: true
 
   fast-string-width@3.0.2:
     dependencies:
       fast-string-truncated-width: 3.0.3
+    optional: true
 
   fast-uri@3.1.8: {}
 
   fast-wrap-ansi@0.2.2:
     dependencies:
       fast-string-width: 3.0.2
+    optional: true
 
   fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
@@ -9656,7 +9664,8 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-  graphql@16.14.2: {}
+  graphql@16.14.2:
+    optional: true
 
   has-bigints@1.1.0: {}
 
@@ -9684,6 +9693,7 @@ snapshots:
     dependencies:
       '@types/set-cookie-parser': 2.4.10
       set-cookie-parser: 3.1.2
+    optional: true
 
   http-cache-semantics@4.3.0:
     optional: true
@@ -9808,7 +9818,8 @@ snapshots:
 
   is-negative-zero@2.0.3: {}
 
-  is-node-process@1.2.0: {}
+  is-node-process@1.2.0:
+    optional: true
 
   is-number-object@1.1.1:
     dependencies:
@@ -10173,6 +10184,7 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - '@types/node'
+    optional: true
 
   multer@2.4.0:
     dependencies:
@@ -10182,7 +10194,8 @@ snapshots:
 
   mute-stream@2.0.0: {}
 
-  mute-stream@3.0.0: {}
+  mute-stream@3.0.0:
+    optional: true
 
   mz@2.7.0:
     dependencies:
@@ -10324,7 +10337,8 @@ snapshots:
       - typescript
       - zod
 
-  outvariant@1.4.3: {}
+  outvariant@1.4.3:
+    optional: true
 
   own-keys@1.0.2:
     dependencies:
@@ -10372,7 +10386,8 @@ snapshots:
       lru-cache: 11.5.3
       minipass: 7.1.3
 
-  path-to-regexp@6.3.0: {}
+  path-to-regexp@6.3.0:
+    optional: true
 
   path-to-regexp@8.4.2: {}
 
@@ -10595,7 +10610,8 @@ snapshots:
       onetime: 5.1.2
       signal-exit: 3.0.7
 
-  rettime@0.11.12: {}
+  rettime@0.11.12:
+    optional: true
 
   rolldown@1.2.12:
     dependencies:
@@ -10756,7 +10772,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  set-cookie-parser@3.1.2: {}
+  set-cookie-parser@3.1.2:
+    optional: true
 
   set-function-length@1.2.2:
     dependencies:
@@ -10970,7 +10987,8 @@ snapshots:
       - react-native-b4a
     optional: true
 
-  strict-event-emitter@0.5.1: {}
+  strict-event-emitter@0.5.1:
+    optional: true
 
   string-argv@0.3.2: {}
 
@@ -11197,11 +11215,13 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.7)
       picomatch: 4.0.7
 
-  tldts-core@7.4.16: {}
+  tldts-core@7.4.16:
+    optional: true
 
   tldts@7.4.16:
     dependencies:
       tldts-core: 7.4.16
+    optional: true
 
   to-data-view@1.1.0:
     optional: true
@@ -11217,6 +11237,7 @@ snapshots:
   tough-cookie@6.0.2:
     dependencies:
       tldts: 7.4.16
+    optional: true
 
   tree-kill@1.2.2: {}
 
@@ -11438,7 +11459,8 @@ snapshots:
       vite: 8.3.3(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)
       webpack: 5.106.2(esbuild@0.28.2)
 
-  until-async@3.0.2: {}
+  until-async@3.0.2:
+    optional: true
 
   upath@1.2.0: {}
 
