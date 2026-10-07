@@ -10,3 +10,6 @@ coverage/
 apps/api/openapi.json
 packages/api-client/src/generated/
 apps/web/src/routeTree.gen.ts
+
+# Captures de preuve du lot 6 (scripts/pwa-offline.mjs)
+apps/web/pwa-proof/
