@@ -1,30 +1,95 @@
-import { ApiError, useListZones } from '@concordance/api-client';
-import { createFileRoute } from '@tanstack/react-router';
+import { type Manager, useListZones } from '@concordance/api-client';
+import { ZoneSlugSchema } from '@concordance/contracts';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { z } from 'zod';
+import { ZoneMap } from '../map/ZoneMap';
+import { useSession } from '../session/useSession';
+import { isOptimistic } from '../shift/cache';
+import { errorMessage } from '../shift/errors';
+import { ShiftBanner } from '../shift/ShiftBanner';
+import { useMyShift, useShiftMutations } from '../shift/useShift';
+import { FILL_KEYS, fillLabel } from '../zones/fill';
+import { ZonePanel } from '../zones/ZonePanel';
 
+// La zone sélectionnée vit dans l'URL (?zone=la-defense) : partageable et conservée au rechargement.
 export const Route = createFileRoute('/')({
-  component: Home,
+  validateSearch: z.object({ zone: ZoneSlugSchema.optional().catch(undefined) }),
+  component: MapPage,
 });
 
-/** Écran provisoire du socle : prouve la chaîne contrat → hooks Orval. La carte arrive au lot 2c. */
-function Home() {
-  const zones = useListZones();
+function MapPage() {
+  const { manager } = useSession();
+  // La racine n'affiche cette page qu'une fois connecté.
+  return manager ? <ZonesScreen me={manager} /> : null;
+}
 
-  if (zones.isPending) return <p>Chargement des zones…</p>;
+function ZonesScreen({ me }: { me: Manager }) {
+  const zones = useListZones({ query: { staleTime: 30_000 } });
+  const shift = useMyShift(me);
+  const { join, end } = useShiftMutations(me);
+  const { zone: selectedSlug } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+
+  if (zones.isPending) return <p className="loading">Chargement des zones…</p>;
   if (zones.isError) {
-    const notYet = zones.error instanceof ApiError && zones.error.status === 501;
     return (
-      <p role="alert">
-        {notYet ? 'API branchée, routes encore en stub (501).' : 'API injoignable.'}
+      <p className="err page-error" role="alert">
+        Impossible de charger les zones.
       </p>
     );
   }
+
+  const shiftZone = zones.data.find((zone) => zone.id === shift?.zoneId);
+  const selected =
+    zones.data.find((zone) => zone.slug === selectedSlug) ?? shiftZone ?? zones.data[0];
+  // Une fin de shift sur une présence encore provisoire n'aurait pas d'id serveur.
+  const busy = join.isPending || end.isPending || (shift ? isOptimistic(shift) : false);
+  const error = join.isError
+    ? errorMessage(join.error)
+    : end.isError
+      ? errorMessage(end.error)
+      : undefined;
+
+  const endShift = () => {
+    if (shift) end.mutate({ id: shift.id, data: { status: 'ENDED' } });
+  };
+
   return (
-    <ul>
-      {zones.data.map((zone) => (
-        <li key={zone.id} data-slug={zone.slug}>
-          {zone.name} : {zone.occupied}/{zone.capacity}
-        </li>
-      ))}
-    </ul>
+    <>
+      {shift && <ShiftBanner shift={shift} zone={shiftZone} busy={busy} onEnd={endShift} />}
+      <div className="app">
+        <div className="mapbox">
+          <ZoneMap
+            zones={zones.data}
+            selected={selected?.slug}
+            onSelect={(zone) => {
+              join.reset();
+              end.reset();
+              void navigate({ search: { zone }, replace: true });
+            }}
+          />
+          <div className="legend">
+            {FILL_KEYS.map((key) => (
+              <span key={key}>
+                <i className={`sw fill-${key}`} />
+                {fillLabel(key)}
+              </span>
+            ))}
+          </div>
+        </div>
+        {selected && (
+          <ZonePanel
+            zone={selected}
+            me={me}
+            shift={shift}
+            shiftZone={shiftZone}
+            busy={busy}
+            error={error}
+            onJoin={() => join.mutate({ data: { zoneId: selected.id } })}
+            onEnd={endShift}
+          />
+        )}
+      </div>
+    </>
   );
 }

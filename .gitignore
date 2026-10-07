@@ -10,3 +10,6 @@ coverage/
 apps/api/openapi.json
 packages/api-client/src/generated/
 apps/web/src/routeTree.gen.ts
+
+# Fichiers temporaires du générateur de routes TanStack
+apps/web/.tanstack/
