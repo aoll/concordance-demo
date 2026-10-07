@@ -30,12 +30,14 @@ function ZonesScreen({ me }: { me: Manager }) {
   const { zone: selectedSlug } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
 
-  if (zones.isPending) return <p className="loading">Chargement des zones…</p>;
-  if (zones.isError) {
-    return (
+  // Des données (même restaurées hors ligne) priment sur une erreur de refetch.
+  if (!zones.data) {
+    return zones.isError ? (
       <p className="err page-error" role="alert">
         Impossible de charger les zones.
       </p>
+    ) : (
+      <p className="loading">Chargement des zones…</p>
     );
   }
 

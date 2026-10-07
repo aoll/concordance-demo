@@ -33,10 +33,17 @@ const zones = [
   managers: names.map((displayName) => ({ id: crypto.randomUUID(), displayName })),
 }));
 
+// L'app n'affiche la carte qu'à un manager connecté, sans shift en cours ici.
+const routes = {
+  '/api/zones': zones,
+  '/api/auth/session': { manager: { id: crypto.randomUUID(), displayName: 'Alex L.' } },
+};
 const api = createServer((req, res) => {
-  if (req.method === 'GET' && req.url === '/api/zones') {
+  const path = req.url?.split('?')[0] ?? '';
+  const body = path === '/api/presences' ? [] : routes[path];
+  if (req.method === 'GET' && body) {
     res.writeHead(200, { 'content-type': 'application/json' });
-    res.end(JSON.stringify(zones));
+    res.end(JSON.stringify(body));
     return;
   }
   res.writeHead(404).end();
@@ -70,7 +77,8 @@ try {
   await page.goto(APP);
   await page.evaluate(() => navigator.serviceWorker.ready);
   await page.reload();
-  await page.getByText('La Défense : 3/3').waitFor();
+  const count = (slug) => page.getByTestId(`count-${slug}`);
+  await count('la-defense').getByText('3/3').waitFor();
   check(
     'service worker actif et contrôlant la page',
     await page.evaluate(() => navigator.serviceWorker.controller?.state === 'activated'),
@@ -110,11 +118,11 @@ try {
   api.close();
   await context.setOffline(true);
   await page.reload();
-  await page.getByText('La Défense : 3/3').waitFor({ timeout: 5000 });
+  await count('la-defense').getByText('3/3').waitFor({ timeout: 5000 });
   check('hors ligne : la page se recharge depuis le shell en cache', true);
   check(
     'hors ligne : dernière occupation connue affichée',
-    await page.getByText('Paris rive gauche : 5/6').isVisible(),
+    (await count('paris-rive-gauche').textContent()) === '5/6',
   );
   check(
     'hors ligne : bandeau visible',
@@ -124,7 +132,7 @@ try {
 
   // 3. Retour du réseau : le bandeau disparaît.
   await context.setOffline(false);
-  await page.getByRole('status').waitFor({ state: 'detached' });
+  await page.getByRole('status').filter({ hasText: 'Hors ligne' }).waitFor({ state: 'detached' });
   check('retour en ligne : bandeau masqué', true);
 } finally {
   await context.close();
