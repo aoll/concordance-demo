@@ -33,8 +33,8 @@ describe('temps réel (lot 5b)', () => {
 
   beforeEach(async () => {
     await resetDatabase(t.db);
-    const zones = (await t.http().get('/api/zones')).body as Array<{ id: string; slug: string }>;
-    orlyId = zones.find((zone) => zone.slug === 'orly')?.id ?? '';
+    const zones = (await t.http().get('/api/zones')).body as Array<{ id: string; name: string }>;
+    orlyId = zones.find((zone) => zone.name === 'Orly')?.id ?? '';
     events = [];
     socket = io(await t.app.getUrl(), { transports: ['websocket'], forceNew: true });
     socket.on(ZONE_OCCUPANCY_UPDATED, (event) => events.push(event));
@@ -59,7 +59,7 @@ describe('temps réel (lot 5b)', () => {
     const joined = await nth(1);
     expect(ZoneOccupancyUpdatedSchema.parse(joined)).toEqual(joined);
     expect(joined).toMatchObject({
-      zone: { id: orlyId, slug: 'orly', occupied: 1, managers: [alex.manager] },
+      zone: { id: orlyId, name: 'Orly', occupied: 1, managers: [alex.manager] },
       change: { kind: 'joined', manager: alex.manager },
     });
 

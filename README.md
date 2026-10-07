@@ -22,7 +22,7 @@ Pour développer, `pnpm dev` lance Postgres, l'API en watch (:3000), le front Vi
 | http://localhost:3000/docs | Swagger |
 | http://localhost:3000/health | Sonde de santé (vérifie la base, hors contrat) |
 
-Au démarrage, l'API joue les migrations et le seed (idempotents) : les 6 zones de la carte et 14 managers en shift, comme dans la maquette (La Défense est pleine, Orly vide). Pour revenir à cet état : `pnpm db:down && docker volume rm concordance-demo_db-data`.
+Au démarrage, l'API joue les migrations et le seed (idempotents) : dans une base vide, les 6 zones de la maquette et 14 managers en shift (La Défense est pleine, Orly vide). Ensuite, les zones vivent en base (nom, capacité, ordre, tracé sur le plan) : le front dessine ce que renvoie `GET /api/zones`, et le seed n'écrase jamais une zone existante. Pour revenir à cet état : `pnpm db:down && docker volume rm concordance-demo_db-data`.
 
 ## Architecture
 
@@ -42,7 +42,7 @@ Au démarrage, l'API joue les migrations et le seed (idempotents) : les 6 zones 
                              │ Drizzle
                      PostgreSQL 17 (Docker)
 
-packages/contracts   les 6 zones et l'événement WS en Zod, importés par l'API et le front
+packages/contracts   l'événement WS et le tracé de zone en Zod, importés par l'API et le front
 packages/api-client  généré par Orval depuis openapi.json : hooks, types, schémas Zod
 packages/tsconfig    configurations TypeScript strictes partagées
 ```

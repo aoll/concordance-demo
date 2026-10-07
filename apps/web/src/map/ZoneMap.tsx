@@ -1,19 +1,20 @@
 import type { ZoneOccupancy } from '@concordance/api-client';
-import type { ZoneSlug } from '@concordance/contracts';
 import { fillOf } from '../zones/fill';
-import { LINES, MARNE, SEINE, STATIONS, TERMINI, WOODS, ZONE_SHAPES } from './geometry';
+import { LINES, MARNE, SEINE, STATIONS, TERMINI, WOODS } from './geometry';
 
 interface ZoneMapProps {
   zones: ZoneOccupancy[];
-  selected: ZoneSlug | undefined;
-  onSelect: (slug: ZoneSlug) => void;
-  /** Zones qui viennent de changer en temps réel : un bref flash attire l'œil. */
-  flashing?: ReadonlySet<ZoneSlug>;
+  /** Id de la zone sélectionnée. */
+  selected: string | undefined;
+  onSelect: (zoneId: string) => void;
+  /** Id des zones qui viennent de changer en temps réel : un bref flash attire l'œil. */
+  flashing?: ReadonlySet<string>;
 }
 
 /**
  * Carte SVG de la maquette. Ordre des calques : fond, lignes RER, gares, puis les zones
- * au-dessus des lignes pour rester cliquables, et enfin les étiquettes.
+ * au-dessus des lignes pour rester cliquables, et enfin les étiquettes. Les zones sont
+ * dessinées à partir de l'API (tracé et étiquette en base) : aucune liste en dur.
  */
 export function ZoneMap({ zones, selected, onSelect, flashing }: ZoneMapProps) {
   return (
@@ -22,7 +23,7 @@ export function ZoneMap({ zones, selected, onSelect, flashing }: ZoneMapProps) {
       className="map"
       viewBox="0 0 800 600"
       role="group"
-      aria-label="Plan schématique de l'Île-de-France avec six zones"
+      aria-label="Plan schématique de l'Île-de-France et zones du réseau"
     >
       <defs>
         <pattern
@@ -82,29 +83,30 @@ export function ZoneMap({ zones, selected, onSelect, flashing }: ZoneMapProps) {
       </g>
 
       {zones.map((zone) => {
-        const shape = ZONE_SHAPES[zone.slug];
         const fill = fillOf(zone);
-        const isSelected = zone.slug === selected;
+        const isSelected = zone.id === selected;
         return (
           // biome-ignore lint/a11y/useSemanticElements: un <path> SVG ne peut pas être un <button>.
           <g
             key={zone.id}
-            id={zone.slug}
-            className={`zone fill-${fill.key}${isSelected ? ' sel' : ''}${flashing?.has(zone.slug) ? ' flash' : ''}`}
+            data-zone-id={zone.id}
+            className={`zone fill-${fill.key}${isSelected ? ' sel' : ''}${flashing?.has(zone.id) ? ' flash' : ''}`}
             role="button"
             tabIndex={0}
             aria-pressed={isSelected}
             aria-label={`${zone.name}, ${zone.occupied} sur ${zone.capacity}`}
-            onClick={() => onSelect(zone.slug)}
+            onClick={() => onSelect(zone.id)}
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
-                onSelect(zone.slug);
+                onSelect(zone.id);
               }
             }}
           >
-            <path className="base" d={shape.d} />
-            {fill.key === 'full' && <path className="hatch" d={shape.d} fill="url(#hatch)" />}
+            <path className="base" d={zone.shape.path} />
+            {fill.key === 'full' && (
+              <path className="hatch" d={zone.shape.path} fill="url(#hatch)" />
+            )}
           </g>
         );
       })}
@@ -112,7 +114,7 @@ export function ZoneMap({ zones, selected, onSelect, flashing }: ZoneMapProps) {
       {/* biome-ignore lint/a11y/noAriaHiddenOnFocusable: étiquettes doublant l'aria-label des zones. */}
       <g aria-hidden="true">
         {zones.map((zone) => {
-          const [x, y] = ZONE_SHAPES[zone.slug].label;
+          const { x, y } = zone.shape.label;
           const fill = fillOf(zone);
           return (
             <g key={zone.id} className={`zl fill-${fill.key}`} transform={`translate(${x} ${y})`}>
@@ -126,7 +128,7 @@ export function ZoneMap({ zones, selected, onSelect, flashing }: ZoneMapProps) {
                 x="5"
                 y="20"
                 textAnchor="middle"
-                data-testid={`count-${zone.slug}`}
+                data-testid={`count-${zone.name}`}
               >
                 {zone.occupied}/{zone.capacity}
               </text>

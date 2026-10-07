@@ -57,7 +57,7 @@ children.push(vite);
 await waitFor(vite, String(PORT), 'vite');
 
 /** Un autre manager, piloté directement par l'API : connexion puis inscription sur une zone. */
-async function otherManagerJoins(slug, displayName) {
+async function otherManagerJoins(zoneName, displayName) {
   const login = await fetch(`${API}/auth/login`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -65,7 +65,7 @@ async function otherManagerJoins(slug, displayName) {
   });
   const cookie = login.headers.get('set-cookie').split(';')[0];
   const zones = await (await fetch(`${API}/zones`)).json();
-  const zoneId = zones.find((zone) => zone.slug === slug).id;
+  const zoneId = zones.find((zone) => zone.name === zoneName).id;
   const created = await fetch(`${API}/presences`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', cookie },
@@ -102,7 +102,7 @@ async function run(name, device) {
     await route.continue();
   });
   const shot = (step) => page.screenshot({ path: `${PROOF_DIR}/${name}-${step}.png` });
-  const count = (slug) => page.getByTestId(`count-${slug}`);
+  const count = (zone) => page.getByTestId(`count-${zone}`);
   const zone = (label) => page.getByRole('button', { name: new RegExp(`^${label},`) });
   const panel = page.locator('aside.panel');
 
@@ -113,14 +113,14 @@ async function run(name, device) {
 
   await page.getByLabel('Pseudo').fill('Alex L.');
   await page.getByRole('button', { name: 'Entrer' }).click();
-  await count('la-defense').getByText('3/3').waitFor();
+  await count('La Défense').getByText('3/3').waitFor();
   check(
     'carte : occupation lue via useListZones (La Défense 3/3, Paris rive gauche 5/6)',
-    (await count('paris-rive-gauche').textContent()) === '5/6',
+    (await count('Paris rive gauche').textContent()) === '5/6',
   );
   check(
     'carte : La Défense complète (hachures)',
-    (await page.locator('#la-defense .hatch').count()) === 1,
+    (await zone('La Défense').locator('.hatch').count()) === 1,
   );
   await shot('2-carte');
 
@@ -130,12 +130,15 @@ async function run(name, device) {
     'panneau : Orly sélectionnée',
     await panel.getByRole('heading', { name: 'Orly' }).isVisible(),
   );
+  const orlyId = (await (await fetch(`${API}/zones`)).json()).find((z) => z.name === 'Orly').id;
+  await page.waitForURL((url) => url.searchParams.get('zone') === orlyId);
+  check(`URL : ?zone=${orlyId}, l'id de la zone dans l'API`, true);
   const response = page.waitForResponse(
     (r) => r.url().endsWith('/api/presences') && r.request().method() === 'POST',
   );
   const clickedAt = Date.now();
   await panel.getByRole('button', { name: "Je m'inscris ici" }).click();
-  await count('orly').getByText('1/3').waitFor({ timeout: 300 });
+  await count('Orly').getByText('1/3').waitFor({ timeout: 300 });
   const optimisticAfter = Date.now() - clickedAt;
   const created = await response;
   check(
@@ -159,7 +162,7 @@ async function run(name, device) {
 
   // Fin de shift depuis le bandeau, elle aussi optimiste.
   await page.locator('.shift').getByRole('button', { name: 'Terminer mon shift' }).click();
-  await count('orly').getByText('0/3').waitFor({ timeout: 300 });
+  await count('Orly').getByText('0/3').waitFor({ timeout: 300 });
   await page.locator('.shift').waitFor({ state: 'detached' });
   check('fin de shift : Orly revient à 0/3 et le bandeau disparaît', true);
 
@@ -171,17 +174,17 @@ async function run(name, device) {
     const button = [...document.querySelectorAll('aside.panel button')].at(-1);
     return button && !button.disabled;
   });
-  check('Saint-Denis à 1/4 avant la course', (await count('saint-denis').textContent()) === '1/4');
+  check('Saint-Denis à 1/4 avant la course', (await count('Saint-Denis').textContent()) === '1/4');
   let othersIn;
   gate = new Promise((resolve) => {
     othersIn = resolve;
   });
   await joinButton.click();
-  await count('saint-denis').getByText('2/4').waitFor({ timeout: 300 });
+  await count('Saint-Denis').getByText('2/4').waitFor({ timeout: 300 });
   check('optimiste : 2/4 affiché avant la réponse', true);
   const leaves = [];
   for (const who of ['Rachid A.', 'Camille J.', 'Lucas H.']) {
-    leaves.push(await otherManagerJoins('saint-denis', who));
+    leaves.push(await otherManagerJoins('Saint-Denis', who));
   }
   othersIn();
   gate = undefined;
@@ -191,7 +194,7 @@ async function run(name, device) {
     "fil d'activité : l'arrivée des autres managers est affichée",
     await panel.getByText('Lucas H. a rejoint Saint-Denis').isVisible(),
   );
-  await count('saint-denis').getByText('4/4').waitFor();
+  await count('Saint-Denis').getByText('4/4').waitFor();
   check(
     'rollback puis resynchronisation : Saint-Denis 4/4, pas de shift',
     (await page.locator('.shift').count()) === 0,

@@ -1,16 +1,9 @@
-import type { ZoneSlug } from '@concordance/contracts';
-
 /**
- * Plan schématique de l'Île-de-France repris de la maquette validée (viewBox 800 × 600).
- * Pas de géométrie en base : seul le slug relie un <path> de cette carte à une zone de l'API.
+ * Fond du plan schématique de l'Île-de-France repris de la maquette validée (viewBox 800 × 600) :
+ * Seine, Marne, RER et gares, purement décoratifs. Les zones, elles, viennent de l'API
+ * (tracé et étiquette en base, `zone.shape`).
  */
 type Point = readonly [number, number];
-
-export interface ZoneShape {
-  d: string;
-  /** Position de l'étiquette (nom + compteur). */
-  label: Point;
-}
 
 /** Polyline aux angles arrondis, façon plan de transport. */
 export function rounded(points: readonly Point[], radius: number): string {
@@ -45,65 +38,6 @@ export function blob(points: readonly Point[]): string {
   }
   return `${d} Z`;
 }
-
-export const ZONE_SHAPES: Record<ZoneSlug, ZoneShape> = {
-  'paris-rive-droite': {
-    d: 'M334,318 C328,250 368,214 422,214 C480,214 518,250 512,318 C482,300 452,288 422,290 C392,292 360,304 334,318 Z',
-    label: [472, 256],
-  },
-  'paris-rive-gauche': {
-    d: 'M334,318 C345,355 380,374 422,374 C468,374 500,352 512,318 C482,300 452,288 422,290 C392,292 360,304 334,318 Z',
-    label: [372, 338],
-  },
-  'la-defense': {
-    d: blob([
-      [212, 226],
-      [262, 206],
-      [298, 222],
-      [304, 276],
-      [278, 312],
-      [226, 306],
-      [200, 266],
-    ]),
-    label: [256, 226],
-  },
-  'saint-denis': {
-    d: blob([
-      [368, 124],
-      [440, 106],
-      [506, 122],
-      [520, 172],
-      [482, 202],
-      [408, 204],
-      [360, 176],
-    ]),
-    label: [402, 140],
-  },
-  'marne-la-vallee': {
-    d: blob([
-      [566, 248],
-      [650, 230],
-      [726, 252],
-      [744, 312],
-      [704, 360],
-      [616, 364],
-      [556, 318],
-    ]),
-    label: [640, 266],
-  },
-  orly: {
-    d: blob([
-      [372, 405],
-      [450, 394],
-      [516, 410],
-      [532, 468],
-      [490, 524],
-      [404, 524],
-      [360, 470],
-    ]),
-    label: [428, 486],
-  },
-};
 
 const RER = { A: '#e2312a', B: '#4a7fd0', C: '#e4b31c', D: '#2f9a57', E: '#a056ad' } as const;
 type Rer = keyof typeof RER;

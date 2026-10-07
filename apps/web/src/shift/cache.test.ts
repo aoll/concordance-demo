@@ -3,16 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { isOptimistic, optimisticPresence, withJoined, withLeft } from './cache';
 
 const me = { id: 'me', displayName: 'Alex L.' };
+const shape = { path: 'M0,0 L10,0 L10,10 Z', label: { x: 5, y: 5 } };
 const zones: ZoneOccupancy[] = [
   {
     id: 'z1',
-    slug: 'orly',
     name: 'Orly',
     capacity: 3,
+    shape,
     occupied: 1,
     managers: [{ id: 'm1', displayName: 'Fatou S.' }],
   },
-  { id: 'z2', slug: 'la-defense', name: 'La Défense', capacity: 3, occupied: 0, managers: [] },
+  { id: 'z2', name: 'La Défense', capacity: 3, shape, occupied: 0, managers: [] },
 ];
 
 describe('mises à jour optimistes du cache', () => {

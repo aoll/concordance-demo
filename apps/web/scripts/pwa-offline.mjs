@@ -11,24 +11,21 @@ import { chromium, devices } from 'playwright-core';
 const PROOF_DIR = process.env.PROOF_DIR ?? 'pwa-proof';
 const APP = 'http://localhost:4173';
 
-// Occupation figée reprise de la maquette, au format ZoneOccupancy du contrat.
+// Occupation figée reprise de la maquette, au format ZoneOccupancy du contrat. Le tracé est un
+// simple disque autour de l'étiquette : cette preuve porte sur le hors ligne, pas sur la carte.
+const disc = (x, y) => `M${x - 50},${y + 20} a50,50 0 1,0 100,0 a50,50 0 1,0 -100,0 Z`;
 const zones = [
-  ['paris-rive-droite', 'Paris rive droite', 6, ['Karim B.', 'Sophie T.', 'Julien R.']],
-  [
-    'paris-rive-gauche',
-    'Paris rive gauche',
-    6,
-    ['Nadia K.', 'Thomas G.', 'Léa M.', 'Hugo P.', 'Inès D.'],
-  ],
-  ['la-defense', 'La Défense', 3, ['Marc V.', 'Claire F.', 'Yanis O.']],
-  ['saint-denis', 'Saint-Denis', 4, ['Fatou S.']],
-  ['marne-la-vallee', 'Marne-la-Vallée', 4, ['Paul N.', 'Emma C.']],
-  ['orly', 'Orly', 3, []],
-].map(([slug, name, capacity, names]) => ({
+  ['Paris rive droite', 6, [472, 256], ['Karim B.', 'Sophie T.', 'Julien R.']],
+  ['Paris rive gauche', 6, [372, 338], ['Nadia K.', 'Thomas G.', 'Léa M.', 'Hugo P.', 'Inès D.']],
+  ['La Défense', 3, [256, 226], ['Marc V.', 'Claire F.', 'Yanis O.']],
+  ['Saint-Denis', 4, [402, 140], ['Fatou S.']],
+  ['Marne-la-Vallée', 4, [640, 266], ['Paul N.', 'Emma C.']],
+  ['Orly', 3, [428, 486], []],
+].map(([name, capacity, [x, y], names]) => ({
   id: crypto.randomUUID(),
-  slug,
   name,
   capacity,
+  shape: { path: disc(x, y), label: { x, y } },
   occupied: names.length,
   managers: names.map((displayName) => ({ id: crypto.randomUUID(), displayName })),
 }));
@@ -77,8 +74,8 @@ try {
   await page.goto(APP);
   await page.evaluate(() => navigator.serviceWorker.ready);
   await page.reload();
-  const count = (slug) => page.getByTestId(`count-${slug}`);
-  await count('la-defense').getByText('3/3').waitFor();
+  const count = (zone) => page.getByTestId(`count-${zone}`);
+  await count('La Défense').getByText('3/3').waitFor();
   check(
     'service worker actif et contrôlant la page',
     await page.evaluate(() => navigator.serviceWorker.controller?.state === 'activated'),
@@ -118,11 +115,11 @@ try {
   api.close();
   await context.setOffline(true);
   await page.reload();
-  await count('la-defense').getByText('3/3').waitFor({ timeout: 5000 });
+  await count('La Défense').getByText('3/3').waitFor({ timeout: 5000 });
   check('hors ligne : la page se recharge depuis le shell en cache', true);
   check(
     'hors ligne : dernière occupation connue affichée',
-    (await count('paris-rive-gauche').textContent()) === '5/6',
+    (await count('Paris rive gauche').textContent()) === '5/6',
   );
   check(
     'hors ligne : bandeau visible',

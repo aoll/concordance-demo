@@ -21,11 +21,11 @@ describe('capacité sous concurrence (lot 3b)', () => {
     await resetDatabase(t.db);
     const zones = (await t.http().get('/api/zones')).body as Array<{
       id: string;
-      slug: string;
+      name: string;
       capacity: number;
     }>;
-    const zone = zones.find((candidate) => candidate.slug === 'la-defense');
-    if (!zone) throw new Error('la-defense absente du seed');
+    const zone = zones.find((candidate) => candidate.name === 'La Défense');
+    if (!zone) throw new Error('La Défense absente du seed');
     laDefense = zone;
   });
 

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ZoneSlugSchema } from './zones';
+import { ZoneShapeSchema } from './zones';
 
 /**
  * Événements WebSocket (socket.io) émis par l'API après chaque commit d'inscription ou de fin
@@ -16,9 +16,9 @@ export const ManagerRefSchema = z.object({
 
 export const ZoneSnapshotSchema = z.object({
   id: z.uuid(),
-  slug: ZoneSlugSchema,
   name: z.string(),
   capacity: z.int().positive(),
+  shape: ZoneShapeSchema,
   occupied: z.int().nonnegative(),
   managers: z.array(ManagerRefSchema),
 });

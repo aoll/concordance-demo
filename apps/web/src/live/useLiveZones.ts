@@ -4,7 +4,7 @@ import {
   type Manager,
   type ZoneOccupancy,
 } from '@concordance/api-client';
-import { ZoneOccupancyUpdatedSchema, type ZoneSlug } from '@concordance/contracts';
+import { ZoneOccupancyUpdatedSchema } from '@concordance/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { type FeedEntry, feedEntry, withZoneSnapshot } from './apply';
@@ -23,19 +23,19 @@ export function useLiveZones(me: Manager) {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<LiveStatus>('connecting');
   const [feed, setFeed] = useState<FeedEntry[]>([]);
-  const [flashing, setFlashing] = useState<ReadonlySet<ZoneSlug>>(new Set());
+  const [flashing, setFlashing] = useState<ReadonlySet<string>>(new Set());
 
   useEffect(() => {
     const zonesKey = getListZonesQueryKey();
     const timers = new Set<ReturnType<typeof setTimeout>>();
 
-    const flash = (slug: ZoneSlug) => {
-      setFlashing((current) => new Set(current).add(slug));
+    const flash = (zoneId: string) => {
+      setFlashing((current) => new Set(current).add(zoneId));
       const timer = setTimeout(() => {
         timers.delete(timer);
         setFlashing((current) => {
           const next = new Set(current);
-          next.delete(slug);
+          next.delete(zoneId);
           return next;
         });
       }, FLASH_MS);
@@ -57,7 +57,7 @@ export function useLiveZones(me: Manager) {
           });
         }
         setFeed((current) => [feedEntry(event, me.id), ...current].slice(0, FEED_SIZE));
-        flash(event.zone.slug);
+        flash(event.zone.id);
       },
       onStatus: (next, reconnected) => {
         setStatus(next);

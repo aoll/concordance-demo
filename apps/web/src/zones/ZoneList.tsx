@@ -1,13 +1,13 @@
 import type { ZoneOccupancy } from '@concordance/api-client';
-import type { ZoneSlug } from '@concordance/contracts';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { fillOf } from './fill';
 
 interface ZoneListProps {
   zones: ZoneOccupancy[];
+  /** Id de la zone sélectionnée. */
   selected: string | undefined;
-  onSelect: (slug: ZoneSlug) => void;
+  onSelect: (zoneId: string) => void;
 }
 
 /** Liste des zones de la bottom sheet (téléphone) : un autre chemin que la carte pour choisir. */
@@ -24,11 +24,11 @@ export function ZoneList({ zones, selected, onSelect }: ZoneListProps) {
           size="sm"
           className={cn(
             'h-9 flex-none rounded-full font-semibold',
-            zone.slug === selected && 'border-primary ring-primary ring-1 ring-inset',
+            zone.id === selected && 'border-primary ring-primary ring-1 ring-inset',
           )}
-          aria-pressed={zone.slug === selected}
-          data-testid={`zone-item-${zone.slug}`}
-          onClick={() => onSelect(zone.slug as ZoneSlug)}
+          aria-pressed={zone.id === selected}
+          data-testid={`zone-item-${zone.name}`}
+          onClick={() => onSelect(zone.id)}
         >
           <i className={cn('bg-fill size-3 rounded-[3px]', `fill-${fillOf(zone).key}`)} />
           <span>{zone.name}</span>

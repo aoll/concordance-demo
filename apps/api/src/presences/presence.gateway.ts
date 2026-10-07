@@ -25,6 +25,6 @@ export class PresenceGateway {
     // Sans serveur HTTP (export du contrat), la gateway n'est pas montée : rien à diffuser.
     if (!this.server) return;
     this.server.emit(ZONE_OCCUPANCY_UPDATED, ZoneOccupancyUpdatedSchema.parse(event));
-    this.logger.debug(`${event.change.kind} ${event.zone.slug} → ${event.zone.occupied}`);
+    this.logger.debug(`${event.change.kind} ${event.zone.name} → ${event.zone.occupied}`);
   }
 }

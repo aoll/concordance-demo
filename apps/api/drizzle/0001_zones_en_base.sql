@@ -1,0 +1,25 @@
+-- Les zones vivent en base : ordre, tracé et étiquette rejoignent nom et capacité, le slug disparaît.
+-- Une base existante (Railway) garde ses présences : ses 6 zones reçoivent leur id fixe du seed.
+ALTER TABLE "zones" ADD COLUMN "position" integer;--> statement-breakpoint
+ALTER TABLE "zones" ADD COLUMN "shape" text;--> statement-breakpoint
+ALTER TABLE "zones" ADD COLUMN "label_x" integer;--> statement-breakpoint
+ALTER TABLE "zones" ADD COLUMN "label_y" integer;--> statement-breakpoint
+CREATE TEMPORARY TABLE "zone_seed" ("slug" text, "id" uuid, "position" integer, "shape" text, "label_x" integer, "label_y" integer);--> statement-breakpoint
+INSERT INTO "zone_seed" VALUES
+	('paris-rive-droite', '06947ae2-f0ae-40b3-8870-a27577f2e5bb'::uuid, 1, 'M334,318 C328,250 368,214 422,214 C480,214 518,250 512,318 C482,300 452,288 422,290 C392,292 360,304 334,318 Z', 472, 256),
+	('paris-rive-gauche', 'b33023cc-4156-4114-911f-3604a3ec7701'::uuid, 2, 'M334,318 C345,355 380,374 422,374 C468,374 500,352 512,318 C482,300 452,288 422,290 C392,292 360,304 334,318 Z', 372, 338),
+	('la-defense', 'b7a46401-e31d-4198-9b0d-c2865c4d0671'::uuid, 3, 'M212,226 C222.3,216.0 247.7,206.7 262,206 C276.3,205.3 291.0,210.3 298,222 C305.0,233.7 307.3,261.0 304,276 C300.7,291.0 291.0,307.0 278,312 C265.0,317.0 239.0,313.7 226,306 C213.0,298.3 202.3,279.3 200,266 C197.7,252.7 201.7,236.0 212,226 Z', 256, 226),
+	('saint-denis', '08777644-b822-4109-aa98-b8938b5fb7c8'::uuid, 4, 'M368,124 C381.3,112.3 417.0,106.3 440,106 C463.0,105.7 492.7,111.0 506,122 C519.3,133.0 524.0,158.7 520,172 C516.0,185.3 500.7,196.7 482,202 C463.3,207.3 428.3,208.3 408,204 C387.7,199.7 366.7,189.3 360,176 C353.3,162.7 354.7,135.7 368,124 Z', 402, 140),
+	('marne-la-vallee', 'e7b7db44-b92e-4602-a619-0b04bbd41bef'::uuid, 5, 'M566,248 C581.7,233.3 623.3,229.3 650,230 C676.7,230.7 710.3,238.3 726,252 C741.7,265.7 747.7,294.0 744,312 C740.3,330.0 725.3,351.3 704,360 C682.7,368.7 640.7,371.0 616,364 C591.3,357.0 564.3,337.3 556,318 C547.7,298.7 550.3,262.7 566,248 Z', 640, 266),
+	('orly', 'fe1eeee3-43a9-4a5d-867d-a2a9a77cf978'::uuid, 6, 'M372,405 C387.0,392.3 426.0,393.2 450,394 C474.0,394.8 502.3,397.7 516,410 C529.7,422.3 536.3,449.0 532,468 C527.7,487.0 511.3,514.7 490,524 C468.7,533.3 425.7,533.0 404,524 C382.3,515.0 365.3,489.8 360,470 C354.7,450.2 357.0,417.7 372,405 Z', 428, 486);--> statement-breakpoint
+ALTER TABLE "presences" DROP CONSTRAINT "presences_zone_id_zones_id_fk";--> statement-breakpoint
+UPDATE "presences" SET "zone_id" = "zone_seed"."id" FROM "zones" JOIN "zone_seed" ON "zone_seed"."slug" = "zones"."slug" WHERE "presences"."zone_id" = "zones"."id";--> statement-breakpoint
+UPDATE "zones" SET "id" = "zone_seed"."id", "position" = "zone_seed"."position", "shape" = "zone_seed"."shape", "label_x" = "zone_seed"."label_x", "label_y" = "zone_seed"."label_y" FROM "zone_seed" WHERE "zone_seed"."slug" = "zones"."slug";--> statement-breakpoint
+DROP TABLE "zone_seed";--> statement-breakpoint
+ALTER TABLE "presences" ADD CONSTRAINT "presences_zone_id_zones_id_fk" FOREIGN KEY ("zone_id") REFERENCES "public"."zones"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "zones" ALTER COLUMN "position" SET NOT NULL;--> statement-breakpoint
+ALTER TABLE "zones" ALTER COLUMN "shape" SET NOT NULL;--> statement-breakpoint
+ALTER TABLE "zones" ALTER COLUMN "label_x" SET NOT NULL;--> statement-breakpoint
+ALTER TABLE "zones" ALTER COLUMN "label_y" SET NOT NULL;--> statement-breakpoint
+ALTER TABLE "zones" DROP CONSTRAINT "zones_slug_unique";--> statement-breakpoint
+ALTER TABLE "zones" DROP COLUMN "slug";

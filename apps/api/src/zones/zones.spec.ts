@@ -1,8 +1,8 @@
-import { ZONES } from '@concordance/contracts';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { seedDatabase } from '../database/migrate';
-import { managers } from '../database/schema';
+import { managers, zones as zonesTable } from '../database/schema';
+import { SEED_ZONES } from '../database/seed-zones';
 import { createTestApp, resetDatabase, type TestApp } from '../test/test-app';
 
 describe('zones et santé (lot 1)', () => {
@@ -21,10 +21,20 @@ describe('zones et santé (lot 1)', () => {
     expect(response.body.info).toEqual({ database: { status: 'up' } });
   });
 
-  it("GET /api/zones renvoie les 6 zones de la carte avec l'occupation du seed", async () => {
+  it("GET /api/zones renvoie les zones de la base, dans leur ordre, avec l'occupation du seed", async () => {
     const response = await t.http().get('/api/zones').expect(200);
-    const zones = response.body as Array<{ slug: string; occupied: number; capacity: number }>;
-    expect(zones.map((zone) => zone.slug)).toEqual(ZONES.map((zone) => zone.slug));
+    const zones = response.body as Array<{
+      id: string;
+      occupied: number;
+      capacity: number;
+      shape: { path: string; label: { x: number; y: number } };
+    }>;
+    // Id fixes du seed : un lien ?zone=<id> est le même sur tous les environnements.
+    expect(zones.map((zone) => zone.id)).toEqual(SEED_ZONES.map((zone) => zone.id));
+    expect(zones[0]?.shape).toEqual({
+      path: SEED_ZONES[0].shape,
+      label: { x: SEED_ZONES[0].labelX, y: SEED_ZONES[0].labelY },
+    });
     expect(zones.map((zone) => `${zone.occupied}/${zone.capacity}`)).toEqual([
       '3/6',
       '5/6',
@@ -61,5 +71,14 @@ describe('zones et santé (lot 1)', () => {
     const response = await t.http().get('/api/zones').expect(200);
     expect(response.body).toHaveLength(6);
     expect(response.body[0].occupied).toBe(3);
+  });
+
+  it('les zones vivent en base : une capacité modifiée est servie et survit au seed', async () => {
+    const orly = SEED_ZONES.find((zone) => zone.name === 'Orly');
+    if (!orly) throw new Error('Orly absente du seed');
+    await t.db.update(zonesTable).set({ capacity: 5 }).where(eq(zonesTable.id, orly.id));
+    await seedDatabase(t.db);
+    const detail = await t.http().get(`/api/zones/${orly.id}`).expect(200);
+    expect(detail.body).toMatchObject({ name: 'Orly', capacity: 5 });
   });
 });
