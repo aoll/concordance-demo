@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { AuthModule } from './auth/auth.module';
 import { BusinessErrorFilter } from './common/errors';
+import { RequestLogger } from './common/request-logger';
 import { ConfigModule } from './config';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
@@ -19,4 +20,8 @@ import { ZonesModule } from './zones/zones.module';
     { provide: APP_FILTER, useClass: BusinessErrorFilter },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(RequestLogger).forRoutes('*path');
+  }
+}
