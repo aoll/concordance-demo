@@ -26,7 +26,13 @@ async function start() {
   if (!root) throw new Error('#root introuvable');
   createRoot(root).render(
     <StrictMode>
-      <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={persistOptions}
+        // Le cache restauré peut retarder d'un événement (sauvegarde différée d'1 s, coupure) :
+        // on le revalide aussitôt, ce qui ne refetch qu'une fois et ne fait rien hors ligne.
+        onSuccess={() => queryClient.invalidateQueries()}
+      >
         <OfflineBanner />
         <RouterProvider router={router} />
       </PersistQueryClientProvider>

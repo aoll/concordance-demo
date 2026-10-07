@@ -8,6 +8,7 @@
     "dev:mocks": "VITE_API_MOCKS=true vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "start": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "generate": "tsr generate",
