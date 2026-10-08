@@ -3,7 +3,6 @@ import { ApiError, type ErrorResponse } from '@concordance/api-client';
 const MESSAGES: Partial<Record<ErrorResponse['code'], string>> = {
   ZONE_FULL: "Cette zone vient d'être complétée. Choisissez une autre zone.",
   ALREADY_PRESENT: 'Vous avez déjà un shift en cours. Terminez-le pour changer de zone.',
-  PRESENCE_ALREADY_ENDED: 'Ce shift était déjà terminé.',
   FORBIDDEN: 'Ce shift appartient à un autre manager.',
   UNAUTHENTICATED: 'Votre session a expiré. Reconnectez-vous.',
 };

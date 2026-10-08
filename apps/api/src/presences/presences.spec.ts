@@ -41,7 +41,7 @@ describe('presences (lot 3b)', () => {
     await t.http().post('/api/presences').set('Cookie', cookie).send({ zoneId: 'x' }).expect(400);
     await t
       .http()
-      .patch('/api/presences/3f1c1f3e-8a51-4c7b-9a43-0d6c1d1e2f10')
+      .put('/api/presences/3f1c1f3e-8a51-4c7b-9a43-0d6c1d1e2f10/status')
       .set('Cookie', cookie)
       .send({ status: 'ACTIVE' })
       .expect(400);
@@ -61,6 +61,7 @@ describe('presences (lot 3b)', () => {
       zoneId: zoneId('Orly'),
       startedAt: expect.any(String),
       endedAt: null,
+      status: 'ACTIVE',
     });
 
     const orly = await t
@@ -109,7 +110,7 @@ describe('presences (lot 3b)', () => {
     expect(response.body).toMatchObject({ code: 'NOT_FOUND' });
   });
 
-  it('end of shift: 403 for another manager, 200 for the owner, then 409', async () => {
+  it('end of shift: 403 for another manager, 200 for the owner, idempotent on retry', async () => {
     const alex = await login(t.http, 'Alex');
     const sam = await login(t.http, 'Sam');
     const { body: presence } = await t
@@ -121,20 +122,19 @@ describe('presences (lot 3b)', () => {
     const end = (cookie: string) =>
       t
         .http()
-        .patch(`/api/presences/${presence.id}`)
+        .put(`/api/presences/${presence.id}/status`)
         .set('Cookie', cookie)
         .send({ status: 'ENDED' });
 
     expect((await end(sam.cookie).expect(403)).body).toMatchObject({ code: 'FORBIDDEN' });
     const ended = await end(alex.cookie).expect(200);
-    expect(ended.body.endedAt).toEqual(expect.any(String));
-    expect((await end(alex.cookie).expect(409)).body).toMatchObject({
-      code: 'PRESENCE_ALREADY_ENDED',
-    });
+    expect(ended.body).toMatchObject({ status: 'ENDED', endedAt: expect.any(String) });
+    // Retrying (lost response, offline replay) returns the same presence, end time unchanged.
+    expect((await end(alex.cookie).expect(200)).body).toEqual(ended.body);
 
     const missing = await t
       .http()
-      .patch('/api/presences/3f1c1f3e-8a51-4c7b-9a43-0d6c1d1e2f10')
+      .put('/api/presences/3f1c1f3e-8a51-4c7b-9a43-0d6c1d1e2f10/status')
       .set('Cookie', alex.cookie)
       .send({ status: 'ENDED' })
       .expect(404);
@@ -167,7 +167,7 @@ describe('presences (lot 3b)', () => {
     const { body: first } = await join(alex.cookie, 'Orly');
     await t
       .http()
-      .patch(`/api/presences/${first.id}`)
+      .put(`/api/presences/${first.id}/status`)
       .set('Cookie', alex.cookie)
       .send({ status: 'ENDED' })
       .expect(200);
