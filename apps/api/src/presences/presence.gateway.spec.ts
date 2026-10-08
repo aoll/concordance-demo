@@ -63,16 +63,23 @@ describe('real time (lot 5b)', () => {
       change: { kind: 'joined', manager: alex.manager },
     });
 
-    await t
-      .http()
-      .patch(`/api/presences/${presence.id}`)
-      .set('Cookie', alex.cookie)
-      .send({ status: 'ENDED' })
-      .expect(200);
+    const end = () =>
+      t
+        .http()
+        .put(`/api/presences/${presence.id}/status`)
+        .set('Cookie', alex.cookie)
+        .send({ status: 'ENDED' })
+        .expect(200);
+    await end();
     expect(await nth(2)).toMatchObject({
       zone: { id: orlyId, occupied: 0, managers: [] },
       change: { kind: 'left', manager: alex.manager },
     });
+
+    // Idempotent retry: nothing changed, so nothing is broadcast.
+    await end();
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect(events).toHaveLength(2);
   });
 
   it('emits nothing when the sign-up is refused (zone full)', async () => {

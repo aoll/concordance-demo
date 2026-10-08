@@ -84,7 +84,10 @@ Chaque table vit dans son module (`managers/managers.schema.ts`, `zones/zones.sc
 
 Les services lèvent des erreurs métier (`ZoneFullError`…) sans connaître HTTP ; un filtre d'exception les traduit en `ErrorResponse { statusCode, code, message }` (409 `ZONE_FULL` ou `ALREADY_PRESENT`, 403, 404). Le front lit `code` pour afficher son message. Un middleware écrit une ligne de log par requête (méthode, route, statut, code métier, durée), refus du guard et de la validation compris.
 
-La fin de shift est un `PATCH /presences/:id { status: "ENDED" }` et non un `DELETE` : on garde l'historique.
+La fin de shift est un `PUT /presences/:id/status { status: "ENDED" }` :
+- pas un `DELETE`, pour garder l'historique ;
+- pas un `PUT /presences/:id`, qui remplacerait toute la présence et laisserait le client fixer `endedAt` ;
+- pas un `PATCH`, parce que `status` est un vrai champ de `Presence` (dérivé de `endedAt`) et que le PUT est idempotent : rejouer la requête après une réponse perdue renvoie 200 et la même présence, sans réécrire l'heure de fin ni rediffuser. Le DTO n'accepte que `ENDED` : un shift ne redevient jamais actif (400).
 
 ## Temps réel
 
@@ -142,11 +145,11 @@ APP_URL=https://<domaine>.up.railway.app pnpm --filter @concordance/web proof:de
 | GET | `/api/zones/:id` | `useGetZone` | `ZoneOccupancy` ou 404 |
 | GET | `/api/presences?managerId=&zoneId=&active=` | `useListPresences` | `Presence[]` |
 | POST | `/api/presences` `{ zoneId }` | `useCreatePresence` | 201 `Presence` ; 409 `ZONE_FULL` / `ALREADY_PRESENT` |
-| PATCH | `/api/presences/:id` `{ status: "ENDED" }` | `useUpdatePresence` | `Presence` ; 403, 404, 409 `PRESENCE_ALREADY_ENDED` |
+| PUT | `/api/presences/:id/status` `{ status: "ENDED" }` | `useSetPresenceStatus` | `Presence` (idempotent) ; 403, 404 |
 
 ## Ce qu'on ferait en production
 
-- **Identité** : le SSO RATP en OIDC à la place du pseudo, avec des rôles. Un superviseur pourrait clore le shift d'un autre manager avec le même `PATCH`, en élargissant seulement la règle d'autorisation.
+- **Identité** : le SSO RATP en OIDC à la place du pseudo, avec des rôles. Un superviseur pourrait clore le shift d'un autre manager avec le même `PUT`, en élargissant seulement la règle d'autorisation.
 - **Exposition publique** : limitation de débit (`@nestjs/throttler`) sur la connexion et les inscriptions, la démo n'ayant ni mot de passe ni quota ; les en-têtes de sécurité (helmet) et l'image non root sont déjà en place.
 - **Plusieurs instances** : l'adapter Redis de socket.io, pour que chaque instance diffuse les événements des autres.
 - **Observabilité** : logs structurés (pino) avec un id de corrélation, traces et métriques OpenTelemetry, alertes sur les 409 et la latence de l'inscription.

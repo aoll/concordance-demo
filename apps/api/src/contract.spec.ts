@@ -37,7 +37,7 @@ describe('API contract', () => {
         'GET /api/presences listPresences',
         'GET /api/zones listZones',
         'GET /api/zones/{id} getZone',
-        'PATCH /api/presences/{id} updatePresence',
+        'PUT /api/presences/{id}/status setPresenceStatus',
         'POST /api/auth/login login',
         'POST /api/auth/logout logout',
         'POST /api/presences createPresence',
@@ -54,7 +54,7 @@ describe('API contract', () => {
         'Manager',
         'Presence',
         'Session',
-        'UpdatePresence',
+        'PresenceStatus',
         'ZoneOccupancy',
       ].sort(),
     );

@@ -7,7 +7,7 @@ import {
   type Presence,
   useCreatePresence,
   useListPresences,
-  useUpdatePresence,
+  useSetPresenceStatus,
   type ZoneOccupancy,
 } from '@concordance/api-client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -75,7 +75,7 @@ export function useShiftMutations(manager: Manager) {
     },
   });
 
-  const end = useUpdatePresence<ShiftError, Snapshot>({
+  const end = useSetPresenceStatus<ShiftError, Snapshot>({
     mutation: {
       onMutate: async ({ id }) => {
         const previous = await snapshot();

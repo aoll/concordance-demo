@@ -4,7 +4,6 @@ import {
   AlreadyPresentError,
   ForbiddenError,
   NotFoundError,
-  PresenceAlreadyEndedError,
   ZoneFullError,
 } from '../common/errors';
 import { type Database, DB, one } from '../database/database.module';
@@ -79,20 +78,27 @@ export class PresencesService {
     }
   }
 
-  /** End of shift: only the presence's author can close it (a supervisor, tomorrow). */
+  /**
+   * End of shift: only the presence's author can close it (a supervisor, tomorrow).
+   * Idempotent: on a shift already ended, returns it unchanged and broadcasts nothing,
+   * so a client can safely retry a request whose response was lost.
+   */
   async end(manager: ManagerRow, id: string): Promise<PresenceDto> {
     const [presence] = await this.db.select().from(presences).where(eq(presences.id, id));
     if (!presence) throw new NotFoundError('Présence inconnue.');
     if (presence.managerId !== manager.id) {
       throw new ForbiddenError('Cette présence appartient à un autre manager.');
     }
-    // The `ended_at IS NULL` condition also protects against two simultaneous shift ends.
+    // The `ended_at IS NULL` condition keeps the first end time when two requests race:
+    // only the one that actually ends the shift writes and broadcasts.
     const [ended] = await this.db
       .update(presences)
       .set({ endedAt: sql`now()` })
       .where(and(eq(presences.id, id), isNull(presences.endedAt)))
       .returning();
-    if (!ended) throw new PresenceAlreadyEndedError();
+    if (!ended) {
+      return toPresence(one(await this.db.select().from(presences).where(eq(presences.id, id))));
+    }
     await this.announce('left', manager, ended.zoneId);
     return toPresence(ended);
   }
@@ -122,6 +128,7 @@ function toPresence(row: PresenceRow): PresenceDto {
     zoneId: row.zoneId,
     startedAt: row.startedAt.toISOString(),
     endedAt: row.endedAt?.toISOString() ?? null,
+    status: row.endedAt ? 'ENDED' : 'ACTIVE',
   };
 }
 

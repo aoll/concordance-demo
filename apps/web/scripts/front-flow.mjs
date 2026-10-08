@@ -73,8 +73,8 @@ async function otherManagerJoins(zoneName, displayName) {
   });
   const presence = await created.json();
   return () =>
-    fetch(`${API}/presences/${presence.id}`, {
-      method: 'PATCH',
+    fetch(`${API}/presences/${presence.id}/status`, {
+      method: 'PUT',
       headers: { 'content-type': 'application/json', cookie },
       body: JSON.stringify({ status: 'ENDED' }),
     });

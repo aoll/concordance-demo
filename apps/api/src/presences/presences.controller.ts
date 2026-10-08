@@ -4,8 +4,8 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
-  Patch,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -25,7 +25,7 @@ import {
   CreatePresenceDto,
   ListPresencesQueryDto,
   PresenceDto,
-  UpdatePresenceDto,
+  PresenceStatusDto,
 } from './presences.dto';
 import { PresencesService } from './presences.service';
 
@@ -63,19 +63,22 @@ export class PresencesController {
     return this.presences.create(manager, body.zoneId);
   }
 
-  @Patch(':id')
-  @ApiOperation({ summary: 'Terminer un shift' })
+  @Put(':id/status')
+  @ApiOperation({
+    summary: 'Terminer un shift',
+    description:
+      'Idempotent : rejouer la requête sur un shift déjà terminé renvoie 200 et la même présence.',
+  })
   @ZodResponse({ status: 200, type: PresenceDto })
   @ApiForbiddenResponse({
     type: ErrorResponseDto,
     description: 'La présence appartient à un autre manager (FORBIDDEN)',
   })
   @ApiNotFoundResponse({ type: ErrorResponseDto })
-  @ApiConflictResponse({ type: ErrorResponseDto, description: 'PRESENCE_ALREADY_ENDED' })
-  updatePresence(
+  setPresenceStatus(
     @CurrentManager() manager: ManagerRow,
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() _body: UpdatePresenceDto,
+    @Body() _body: PresenceStatusDto,
   ): Promise<PresenceDto> {
     // Only status accepted by the contract: ENDED.
     return this.presences.end(manager, id);

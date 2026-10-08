@@ -8,6 +8,8 @@ export const PresenceSchema = z.object({
   startedAt: z.iso.datetime(),
   /** null while the shift is in progress. */
   endedAt: z.iso.datetime().nullable(),
+  /** Derived from endedAt: ACTIVE while the shift is in progress. */
+  status: z.enum(['ACTIVE', 'ENDED']),
 });
 
 export class PresenceDto extends createZodDto(PresenceSchema) {}
@@ -19,12 +21,15 @@ export const CreatePresenceSchema = z.object({
 
 export class CreatePresenceDto extends createZodDto(CreatePresenceSchema) {}
 
-/** End of shift: the end time is set by the server. */
-export const UpdatePresenceSchema = z.object({
+/**
+ * Full representation of the `status` sub-resource, replaced by PUT. Only ENDED can be written:
+ * a shift never goes back to ACTIVE, and the end time is set by the server.
+ */
+export const PresenceStatusSchema = z.object({
   status: z.literal('ENDED'),
 });
 
-export class UpdatePresenceDto extends createZodDto(UpdatePresenceSchema) {}
+export class PresenceStatusDto extends createZodDto(PresenceStatusSchema) {}
 
 export const ListPresencesQuerySchema = z.object({
   managerId: z.uuid().optional(),

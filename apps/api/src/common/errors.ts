@@ -39,20 +39,12 @@ export class AlreadyPresentError extends BusinessError {
   }
 }
 
-export class PresenceAlreadyEndedError extends BusinessError {
-  readonly code = 'PRESENCE_ALREADY_ENDED';
-  constructor() {
-    super('Ce shift est déjà terminé.');
-  }
-}
-
 const STATUS: Record<ErrorCode, HttpStatus> = {
   UNAUTHENTICATED: HttpStatus.UNAUTHORIZED,
   FORBIDDEN: HttpStatus.FORBIDDEN,
   NOT_FOUND: HttpStatus.NOT_FOUND,
   ZONE_FULL: HttpStatus.CONFLICT,
   ALREADY_PRESENT: HttpStatus.CONFLICT,
-  PRESENCE_ALREADY_ENDED: HttpStatus.CONFLICT,
 };
 
 @Catch(BusinessError)

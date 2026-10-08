@@ -40,6 +40,7 @@ export function optimisticPresence(managerId: string, zoneId: string, now = new 
     zoneId,
     startedAt: now.toISOString(),
     endedAt: null,
+    status: 'ACTIVE',
   };
 }
 

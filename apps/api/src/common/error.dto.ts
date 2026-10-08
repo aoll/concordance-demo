@@ -11,7 +11,6 @@ export const ErrorCodeSchema = z.enum([
   'NOT_FOUND',
   'ZONE_FULL',
   'ALREADY_PRESENT',
-  'PRESENCE_ALREADY_ENDED',
 ]);
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>;
 
